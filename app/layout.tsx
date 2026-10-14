@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-
 import { DM_Sans, Space_Grotesk } from "next/font/google";
+
+import { SplashScreen } from "@/components/brand/splash-screen";
 
 const headingFont = Space_Grotesk({
   variable: "--font-heading",
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${headingFont.variable} ${bodyFont.variable}`}
     >
       <body >
+        <SplashScreen />
         {children}
       </body>
     </html>
