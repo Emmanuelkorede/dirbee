@@ -23,6 +23,7 @@ export type Project = {
   description?: string;
   services?: string[];
   year?: number;
+  aspectRatio?: number;
 
   featured: boolean;
   relatedProjectIds: string[];

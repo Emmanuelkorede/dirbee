@@ -7,6 +7,7 @@ import { RelatedProjects } from "@/components/projects/related-projects";
 import { VideoModal } from "@/components/projects/video-modal";
 import { WistiaPlayer } from "@/components/projects/wistia-player";
 import { getProjectBySlug, projects } from "@/data/projects";
+import { getWistiaAspectRatio } from "@/lib/video/wistia-thumbnail";
 
 type ProjectPageProps = {
   params: Promise<{ slug: string }>;
@@ -41,6 +42,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   if (!project) notFound();
 
+  const aspectRatio =
+    project.aspectRatio ?? (await getWistiaAspectRatio(project.wistiaId));
+
   // Only rows that contain real data are shown.
   const details = [
     { label: "Client", value: project.client },
@@ -70,8 +74,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           wistiaId={project.wistiaId}
           title={project.title}
           artist={project.artist}
+          aspectRatio={aspectRatio}
         >
-          <WistiaPlayer wistiaId={project.wistiaId} title={project.title} />
+          <WistiaPlayer
+            wistiaId={project.wistiaId}
+            title={project.title}
+            aspectRatio={aspectRatio}
+          />
         </VideoModal>
 
         <h1 className="mt-10 font-heading text-4xl uppercase tracking-tight sm:text-6xl">

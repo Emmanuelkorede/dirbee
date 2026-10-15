@@ -16,6 +16,8 @@ type VideoModalProps = {
   wistiaId: string;
   title: string;
   artist: string;
+  // width / height of the video. Defaults to landscape 16:9.
+  aspectRatio?: number;
   // The normal inline player, rendered by the page.
   children: ReactNode;
 };
@@ -24,6 +26,7 @@ export function VideoModal({
   wistiaId,
   title,
   artist,
+  aspectRatio = 16 / 9,
   children,
 }: VideoModalProps) {
   const [open, setOpen] = useState(false);
@@ -81,12 +84,20 @@ export function VideoModal({
     };
   }, [open, close]);
 
+  const isPortrait = aspectRatio < 1;
+
   return (
     <div>
       {open ? (
         <div
           aria-hidden="true"
-          className="aspect-video w-full rounded-xl border border-border bg-card"
+          className="mx-auto w-full rounded-xl border border-border bg-card"
+          style={{
+            aspectRatio,
+            maxWidth: isPortrait
+              ? `min(100%, calc(75svh * ${aspectRatio}))`
+              : undefined,
+          }}
         />
       ) : (
         children
@@ -151,14 +162,15 @@ export function VideoModal({
               <div
                 className="w-full"
                 style={{
-                  // Fit the 16:9 player inside the screen height too.
-                  maxWidth: "min(72rem, calc((100svh - 9rem) * 16 / 9))",
+                  // Fit the video inside the screen height, whatever its shape.
+                  maxWidth: `min(72rem, calc((100svh - 9rem) * ${aspectRatio}))`,
                 }}
               >
                 <WistiaPlayer
                   wistiaId={wistiaId}
                   title={title}
                   autoPlay
+                  aspectRatio={aspectRatio}
                   className="rounded-lg border-ivory/20"
                 />
               </div>

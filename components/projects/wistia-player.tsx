@@ -7,6 +7,8 @@ type WistiaPlayerProps = {
   wistiaId: string | null;
   title: string;
   autoPlay?: boolean;
+  // width / height of the video. Defaults to landscape 16:9.
+  aspectRatio?: number;
   className?: string;
 };
 
@@ -14,14 +16,23 @@ export function WistiaPlayer({
   wistiaId,
   title,
   autoPlay = false,
+  aspectRatio = 16 / 9,
   className,
 }: WistiaPlayerProps) {
+  const isPortrait = aspectRatio < 1;
+
   return (
     <div
       className={cn(
-        "relative aspect-video w-full overflow-hidden rounded-xl border border-border bg-card",
+        "relative mx-auto w-full overflow-hidden rounded-xl border border-border bg-card",
         className
       )}
+      style={{
+        aspectRatio,
+        maxWidth: isPortrait
+          ? `min(100%, calc(75svh * ${aspectRatio}))`
+          : undefined,
+      }}
     >
       {isValidWistiaId(wistiaId) ? (
         <iframe
