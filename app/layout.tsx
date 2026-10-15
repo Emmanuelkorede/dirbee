@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { DM_Sans, Space_Grotesk } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next"
 
 const headingFont = Space_Grotesk({
   variable: "--font-heading-family",
@@ -28,7 +29,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
       className={`${headingFont.variable} ${bodyFont.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+
+      </body>
     </html>
   );
 }
