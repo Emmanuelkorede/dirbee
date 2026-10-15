@@ -14,17 +14,17 @@ const sections = [
   {
     id: "what-we-do",
     title: "What House of Bee does",
-    body: "House of Bee is a creative production house making music visuals, artist content and cinematic work. This is placeholder text: replace it with the company's own description.",
+    body: "House of Bee is a premium creative production house specializing in high-concept music visuals, multi-platform artist content, and cinematic storytelling. Born in Lagos and engineered for the global stage, we translate musical eras into distinct visual universes. We don't just film projects; we build the visual infrastructure that defines an artist's identity.",
   },
   {
     id: "approach",
     title: "Creative approach",
-    body: "Placeholder: describe how projects are developed, from the first idea with an artist through to the finished video.",
+    body: "We take projects from their sonic roots and map out an end-to-end visual rollout strategy, blending collaborative world-building with high-end digital cinema execution to turn an artist's music into a cohesive, culturally resonant visual universe.",
   },
   {
     id: "vision",
     title: "Vision",
-    body: "Placeholder: describe the company's vision and its philosophy on storytelling.",
+    body: "To pioneer the next era of African visual storytelling by creating timeless, culture-shifting imagery. We believe that in a fast-moving digital landscape, narrative longevity is everything. Our vision is to empower African creatives and position artists for global recognition through uncompromising visual art and strategy..",
   },
 ];
 
