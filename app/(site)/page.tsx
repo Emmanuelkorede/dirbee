@@ -31,7 +31,7 @@ export default function HomePage() {
 
           {/* PLACEHOLDER COPY: replace with Bee's wording. */}
           <p className="mt-8 max-w-xl text-lg text-muted-foreground sm:text-xl">
-            Visual storytelling. Artist expression. Cinematic experiences.
+            Campaign Rollouts. Visual Direction. Creative Development.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
