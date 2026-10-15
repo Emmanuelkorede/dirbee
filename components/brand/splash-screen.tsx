@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -17,22 +16,21 @@ const SPLASH_SESSION_KEY = "house-of-bee-splash-seen";
 export function SplashScreen({
   duration = 1700,
 }: SplashScreenProps) {
-  const [isVisible, setIsVisible] = useState(false);
   const prefersReducedMotion = useReducedMotion();
 
-  useEffect(() => {
-    let alreadySeen = false;
-
+  // Initialize visibility lazily: check session storage right away.
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window === "undefined") return false;
     try {
-      alreadySeen =
-        sessionStorage.getItem(SPLASH_SESSION_KEY) === "true";
+      return sessionStorage.getItem(SPLASH_SESSION_KEY) !== "true";
     } catch {
-      // Continue without session storage if unavailable.
+      return true; // Default to visible if storage is blocked
     }
+  });
 
-    if (alreadySeen) return;
-
-    setIsVisible(true);
+  // Handle the dismissal timer via effect only when visible
+  useEffect(() => {
+    if (!isVisible) return;
 
     const timeout = window.setTimeout(
       () => {
@@ -48,7 +46,7 @@ export function SplashScreen({
     );
 
     return () => window.clearTimeout(timeout);
-  }, [duration, prefersReducedMotion]);
+  }, [isVisible, duration, prefersReducedMotion]);
 
   const pathTransition = prefersReducedMotion
     ? { duration: 0.15 }
@@ -78,9 +76,11 @@ export function SplashScreen({
           <motion.svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 500 500"
-            width="clamp(120px, 24vw, 220px)"
-            height="clamp(120px, 24vw, 220px)"
             fill="none"
+            style={{
+              width: "clamp(120px, 24vw, 220px)",
+              height: "clamp(120px, 24vw, 220px)",
+            }}
             initial={{ scale: prefersReducedMotion ? 1 : 0.92 }}
             animate={{ scale: 1 }}
             transition={{
