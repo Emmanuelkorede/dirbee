@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
@@ -55,7 +56,9 @@ export function Navbar() {
         </div>
       </header>
 
-      <MenuOverlay open={open} onClose={closeMenu} />
+      <Suspense fallback={null}>
+        <MenuOverlay open={open} onClose={closeMenu} />
+      </Suspense>
     </>
   );
 }
