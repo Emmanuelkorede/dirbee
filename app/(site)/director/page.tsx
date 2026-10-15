@@ -12,15 +12,14 @@ export const metadata: Metadata = {
 
 // PLACEHOLDER COPY: replace each of these with Bee's own words.
 const intro =
-  "Bee is a director working across music visuals, artist content and cinematic storytelling.";
+  "Director Bee is a Lagos-based visual strategist and director crafting immersive visual worlds that push African music beyond the expected. Her work lives at the intersection of culture and the surreal; where grounded realities meet elevated, almost supernatural expressions.";
 
 const biography = [
-  "This is a placeholder biography. Replace it with Bee's story: where she started, how she got into directing and what drives her work.",
-  "Add a second paragraph here about her journey and the kind of projects she is most proud of.",
+  "Known for translating bold concepts into striking visuals, she approaches every frame as both art and strategy. From shaping an artist’s visual identity to directing full-scale productions, she builds cohesive rollouts that don’t just support the music, but expand its reach and impact.",
 ];
 
 const philosophy =
-  "This is a placeholder for Bee's creative philosophy: how she approaches an idea, works with artists and shapes a finished piece.";
+  "Her philosophy is rooted in narrative longevity. In a fast-moving content landscape, she focuses on creating distinct visual languages that position artists for global recognition. Based in Lagos, Nigeria, she works with artists and teams across markets on projects and select collaborations, bringing a refined West African perspective to the global stage.";
 
 // Built from data/projects.ts, with duplicates removed.
 const artists = [...new Set(projects.map((project) => project.artist))];
