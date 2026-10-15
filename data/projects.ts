@@ -6,154 +6,174 @@ export type ProjectType =
   | "Performance Reel";
 
 export type Project = {
+  id: string;
   slug: string;
   title: string;
   artist: string;
   client: string;
   type: ProjectType;
 
-  // The part after /s/ in Bee's Wistia share link.
+  // Verified Wistia media ID used by the video embed.
+  wistiaId: string;
+
+  // Original share slug supplied by Bee.
   wistiaShareSlug: string;
 
-  // Groups different videos from the same project together.
-  groupSlug: string;
+  // Optional project information.
+  description?: string;
+  services?: string[];
+  year?: number;
 
-  // Optional links to related projects.
-  relatedSlugs?: string[];
-
-  // Set to true when Bee chooses this for the homepage.
   featured: boolean;
+  relatedProjectIds: string[];
 };
 
 export const projects: Project[] = [
   {
+    id: "for-your-tears",
     slug: "for-your-tears",
     title: "For Your Tears",
     artist: "Oshamo X Shiloh",
     client: "emPawa Africa",
     type: "Visualizer",
+    wistiaId: "1ndnmqqlge",
     wistiaShareSlug: "6nok9iikgu6ajg5",
-    groupSlug: "for-your-tears",
-    featured: false,
+    featured: true,
+    relatedProjectIds: [],
   },
 
   {
-    slug: "fortidias-1",
+    id: "fortidias",
+    slug: "fortidias",
     title: "Fortidias 1",
     artist: "DHYMA",
     client: "DHYMA",
     type: "Visualizer",
+    wistiaId: "mt73ms4vyb",
     wistiaShareSlug: "sdv11ukl3yr0chw",
-    groupSlug: "fortidias",
-    featured: false,
+    featured: true,
+    relatedProjectIds: ["fortidias-2"],
   },
 
   {
-    slug: "the-signal",
-    title: "The Signal",
-    artist: "Alexa Vibez",
-    client: "JMB RECORDS",
-    type: "Artist Unveiling Video",
-    wistiaShareSlug: "x4qn7gp6uchmwfv",
-    groupSlug: "the-signal",
-    relatedSlugs: ["daju-1"],
-    featured: false,
-  },
-
-  {
-    slug: "daju-1",
-    title: "Daju 1",
-    artist: "Faith Martins",
-    client: "Faith Martins",
-    type: "Content",
-    wistiaShareSlug: "3z2nyqdxxu2fos8",
-    groupSlug: "daju",
-    relatedSlugs: ["the-signal"],
-    featured: false,
-  },
-
-  {
-    slug: "paragon-1",
-    title: "Paragon 1",
-    artist: "QUIRIES",
-    client: "Dhope Management Team",
-    type: "Content",
-    wistiaShareSlug: "qe7pgn9wcd94hdo",
-    groupSlug: "paragon",
-    featured: false,
-  },
-
-  {
-    slug: "paragon-2",
-    title: "Paragon 2",
-    artist: "QUIRIES",
-    client: "Dhope Management Team",
-    type: "Content",
-    wistiaShareSlug: "u91jvx1jpg8u8mx",
-    groupSlug: "paragon",
-    featured: false,
-  },
-
-  {
-    slug: "paragon-3",
-    title: "Paragon 3",
-    artist: "QUIRIES",
-    client: "Dhope Management Team",
-    type: "Content",
-    wistiaShareSlug: "l9jl8pwgglhp68t",
-    groupSlug: "paragon",
-    featured: false,
-  },
-
-  {
+    id: "fortidias-2",
     slug: "fortidias-2",
     title: "Fortidias 2",
     artist: "DHYMA",
     client: "DHYMA",
     type: "Content",
+    wistiaId: "4l4h8ms3wa",
     wistiaShareSlug: "76afgtjajsotdjj",
-    groupSlug: "fortidias",
     featured: false,
+    relatedProjectIds: ["fortidias"],
   },
 
   {
+    id: "the-signal",
+    slug: "the-signal",
+    title: "The Signal",
+    artist: "Alexa Vibez",
+    client: "JMB Records",
+    type: "Artist Unveiling Video",
+    wistiaId: "m8vl24h5me",
+    wistiaShareSlug: "x4qn7gp6uchmwfv",
+    featured: true,
+    relatedProjectIds: ["mulla"],
+  },
+
+  {
+    id: "mulla",
     slug: "mulla",
     title: "Mulla",
     artist: "Alexa Vibez",
-    client: "JMB RECORDS",
+    client: "JMB Records",
     type: "Performance Reel",
+    wistiaId: "8f9rz9nbh9",
     wistiaShareSlug: "b8odsy2kcosvgsn",
-    groupSlug: "mulla",
     featured: false,
+    relatedProjectIds: ["the-signal"],
+  },
+
+  {
+    id: "daju",
+    slug: "daju",
+    title: "Daju",
+    artist: "Faith Martins",
+    client: "Faith Martins",
+    type: "Content",
+    wistiaId: "rx66w05za4",
+    wistiaShareSlug: "3z2nyqdxxu2fos8",
+    featured: false,
+    relatedProjectIds: [],
+  },
+
+  {
+    id: "paragon-1",
+    slug: "paragon-1",
+    title: "Paragon 1",
+    artist: "QUIRIES",
+    client: "Dhope Management Team",
+    type: "Content",
+    wistiaId: "uixlf0amvx",
+    wistiaShareSlug: "qe7pgn9wcd94hdo",
+    featured: true,
+    relatedProjectIds: ["paragon-2", "paragon-3"],
+  },
+
+  {
+    id: "paragon-2",
+    slug: "paragon-2",
+    title: "Paragon 2",
+    artist: "QUIRIES",
+    client: "Dhope Management Team",
+    type: "Content",
+    wistiaId: "kg5y69qhpx",
+    wistiaShareSlug: "u91jvx1jpg8u8mx",
+    featured: false,
+    relatedProjectIds: ["paragon-1", "paragon-3"],
+  },
+
+  {
+    id: "paragon-3",
+    slug: "paragon-3",
+    title: "Paragon 3",
+    artist: "QUIRIES",
+    client: "Dhope Management Team",
+    type: "Content",
+    wistiaId: "c0oh988cql",
+    wistiaShareSlug: "l9jl8pwgglhp68t",
+    featured: false,
+    relatedProjectIds: ["paragon-1", "paragon-2"],
   },
 ];
 
+export function getProjectBySlug(
+  slug: string
+): Project | undefined {
+  return projects.find((project) => project.slug === slug);
+}
 
+export function getFeaturedProjects(
+  limit = 5
+): Project[] {
+  return projects
+    .filter((project) => project.featured)
+    .slice(0, limit);
+}
 
+// Only explicit relationships count.
+// A relationship works in either direction.
 export function getRelatedProjects(
-  currentProject: Project
+  current: Project
 ): Project[] {
   return projects.filter((candidate) => {
-    // Never show the current project as its own related project.
-    if (candidate.slug === currentProject.slug) {
+    if (candidate.id === current.id) {
       return false;
     }
 
-    // Connect different videos from the same project group.
-    const sameGroup =
-      candidate.groupSlug === currentProject.groupSlug;
-
-    // Connect other work from the same artist.
-    const sameArtist =
-      candidate.artist.toLowerCase() ===
-      currentProject.artist.toLowerCase();
-
-    // Respect manual links in either direction.
-    const explicitlyRelated =
-      currentProject.relatedSlugs?.includes(candidate.slug) ||
-      candidate.relatedSlugs?.includes(currentProject.slug);
-
-    return sameGroup || sameArtist || Boolean(explicitlyRelated);
+    return (
+      current.relatedProjectIds.includes(candidate.id) ||
+      candidate.relatedProjectIds.includes(current.id)
+    );
   });
 }
-
