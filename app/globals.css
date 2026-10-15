@@ -117,9 +117,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
-    transition:
-      background-color 250ms ease,
-      color 250ms ease;
+
   }
 
   h1,
@@ -190,4 +188,19 @@ html[data-splash-seen="true"] [data-splash] {
     visibility: hidden;
     pointer-events: none;
   }
+} 
+/* The theme fade only runs after the page has loaded (the class is added
+   by ThemeProvider), so it never plays during the first paint. */
+html.theme-ready body {
+  transition:
+    background-color 250ms ease,
+    color 250ms ease;
+}
+
+/* No element transitions until the page has loaded, so nothing can fade
+   from light to dark during the first paint. */
+html:not(.theme-ready) *,
+html:not(.theme-ready) *::before,
+html:not(.theme-ready) *::after {
+  transition: none !important;
 }
