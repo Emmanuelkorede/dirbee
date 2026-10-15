@@ -4,7 +4,7 @@ import { Mail } from "lucide-react";
 import { BrandLockup } from "@/components/brand/brand-lockup";
 import { navLinks, siteConfig } from "@/data/site";
 
-function InstagramIcon({ className }: { className?: string }) {
+export function InstagramIcon({ className }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -25,7 +25,7 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 
-function TikTokIcon({ className }: { className?: string }) {
+export function TikTokIcon({ className }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
