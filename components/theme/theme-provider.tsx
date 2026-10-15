@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -26,14 +27,22 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Initialize state lazily from the DOM (set by the inline layout script) 
-  // or fall back to "light" during SSR.
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window !== "undefined") {
-      return document.documentElement.classList.contains("dark") ? "dark" : "light";
-    }
-    return "light";
-  });
+  // The inline script in the root layout has already set the correct
+  // class before hydration. We start on "light" and sync in an effect,
+  // so the server and client markup always match.
+  const [theme, setThemeState] = useState<Theme>("light");
+
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains("dark");
+    setThemeState(isDark ? "dark" : "light");
+
+    // Enable the theme fade only after the first paint.
+    const frame = requestAnimationFrame(() => {
+      document.documentElement.classList.add("theme-ready");
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);
