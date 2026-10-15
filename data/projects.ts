@@ -31,6 +31,18 @@ export type Project = {
 
 export const projects: Project[] = [
   {
+    id: "daju",
+    slug: "daju",
+    title: "Daju",
+    artist: "Faith Martins",
+    client: "Faith Martins",
+    type: "Content",
+    wistiaId: "rx66w05za4",
+    wistiaShareSlug: "3z2nyqdxxu2fos8",
+    featured: true,
+    relatedProjectIds: [],
+  },
+  {
     id: "for-your-tears",
     slug: "for-your-tears",
     title: "For Your Tears",
@@ -96,19 +108,6 @@ export const projects: Project[] = [
   },
 
   {
-    id: "daju",
-    slug: "daju",
-    title: "Daju",
-    artist: "Faith Martins",
-    client: "Faith Martins",
-    type: "Content",
-    wistiaId: "rx66w05za4",
-    wistiaShareSlug: "3z2nyqdxxu2fos8",
-    featured: false,
-    relatedProjectIds: [],
-  },
-
-  {
     id: "paragon-1",
     slug: "paragon-1",
     title: "Paragon 1",
@@ -117,7 +116,7 @@ export const projects: Project[] = [
     type: "Content",
     wistiaId: "uixlf0amvx",
     wistiaShareSlug: "qe7pgn9wcd94hdo",
-    featured: true,
+    featured: false,
     relatedProjectIds: ["paragon-2", "paragon-3"],
   },
 
