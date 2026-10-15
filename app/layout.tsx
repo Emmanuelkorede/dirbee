@@ -14,12 +14,29 @@ const bodyFont = DM_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase : new  URL("https://www.houseofbee.site/") ,
+
   title: {
-    default: "House of Bee",
+    default: "House of Bee — Production Company",
     template: "%s | House of Bee",
   },
   description:
     "House of Bee is a creative production house for music visuals, artist content and cinematic storytelling, led by Director Bee.",
+
+    openGraph : {
+    title: 'House of Bee — Production Company',
+    description: 'House of Bee is a creative production house for music visuals, artist content and cinematic storytelling, led by Director Bee.',
+    type : 'website' ,
+    siteName : 'House of Bee'
+
+  } , 
+
+  twitter: {
+    card: 'summary_large_image',
+    title: "House of Bee — Production Company",
+    description: 'House of Bee is a creative production house for music visuals, artist content and cinematic storytelling, led by Director Bee.',
+  },
+
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
