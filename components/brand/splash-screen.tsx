@@ -16,21 +16,26 @@ const SPLASH_SESSION_KEY = "house-of-bee-splash-seen";
 export function SplashScreen({
   duration = 1700,
 }: SplashScreenProps) {
+  // Starts visible so the server and the browser render the same thing.
+  // Repeat visitors never see it: the inline script in app/layout.tsx
+  // hides it with CSS before the first paint.
+  const [isVisible, setIsVisible] = useState(true);
   const prefersReducedMotion = useReducedMotion();
 
-  // Initialize visibility lazily: check session storage right away.
-  const [isVisible, setIsVisible] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return sessionStorage.getItem(SPLASH_SESSION_KEY) !== "true";
-    } catch {
-      return true; // Default to visible if storage is blocked
-    }
-  });
-
-  // Handle the dismissal timer via effect only when visible
   useEffect(() => {
-    if (!isVisible) return;
+    let alreadySeen = false;
+
+    try {
+      alreadySeen =
+        sessionStorage.getItem(SPLASH_SESSION_KEY) === "true";
+    } catch {
+      // Continue without session storage if unavailable.
+    }
+
+    if (alreadySeen) {
+      setIsVisible(false);
+      return;
+    }
 
     const timeout = window.setTimeout(
       () => {
@@ -46,7 +51,7 @@ export function SplashScreen({
     );
 
     return () => window.clearTimeout(timeout);
-  }, [isVisible, duration, prefersReducedMotion]);
+  }, [duration, prefersReducedMotion]);
 
   const pathTransition = prefersReducedMotion
     ? { duration: 0.15 }
@@ -61,6 +66,7 @@ export function SplashScreen({
       {isVisible && (
         <motion.div
           key="house-of-bee-splash"
+          data-splash=""
           className="fixed inset-0 z-[100] grid place-items-center bg-background"
           initial={{ opacity: 1 }}
           exit={{

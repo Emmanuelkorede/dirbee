@@ -174,3 +174,20 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+
+html[data-splash-seen="true"] [data-splash] {
+  display: none;
+}
+
+[data-splash] {
+  animation: splash-failsafe 0s linear 5s forwards;
+}
+
+@keyframes splash-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}

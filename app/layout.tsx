@@ -52,8 +52,14 @@ const themeInitScript = `
     var isDark = saved ? saved === "dark" : prefersDark;
     document.documentElement.classList.toggle("dark", isDark);
   } catch (e) {}
+  try {
+    if (sessionStorage.getItem("house-of-bee-splash-seen") === "true") {
+      document.documentElement.setAttribute("data-splash-seen", "true");
+    }
+  } catch (e) {}
 })();
 `;
+
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
