@@ -11,7 +11,7 @@ export function DirectorPreview() {
       <div className="grid items-center gap-10 md:grid-cols-2 lg:gap-20">
         <div className="relative aspect-[4/5] max-w-md overflow-hidden rounded-xl border border-border bg-card md:max-w-none">
           <Image
-            src="/images/bee-portrait.jpg"
+            src="/images/bee-portrait.png"
             alt="Portrait of Director Bee"
             fill
             sizes="(min-width: 768px) 50vw, 100vw"
