@@ -25,7 +25,7 @@ export default function HomePage() {
             A creative production house
           </p>
 
-          <h1 className="font-heading text-6xl uppercase leading-[0.95] tracking-tight sm:text-8xl lg:text-9xl">
+          <h1 className="whitespace-nowrap font-heading text-[length:clamp(2rem,11vw,8rem)] uppercase leading-[0.95] tracking-tight">
             House of Bee
           </h1>
 
@@ -34,13 +34,22 @@ export default function HomePage() {
             Visual storytelling. Artist expression. Cinematic experiences.
           </p>
 
-          <Link
-            href="/work"
-            className="mt-10 inline-flex items-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
-          >
-            View work
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
+          <div className="mt-10 flex flex-wrap items-center gap-4">
+            <Link
+              href="/work"
+              className="inline-flex items-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
+            >
+              View work
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+
+            <Link
+              href="/contact"
+              className="inline-flex items-center rounded-lg border border-foreground/30 px-6 py-3 text-sm font-medium transition-colors hover:bg-card"
+            >
+              Get in touch
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -49,17 +58,12 @@ export default function HomePage() {
         aria-labelledby="selected-work-heading"
         className="mx-auto max-w-7xl px-6 sm:px-10"
       >
-        <div className="mb-10 flex items-end justify-between gap-6">
-          <h2
-            id="selected-work-heading"
-            className="font-heading text-3xl sm:text-4xl"
-          >
-            Selected work
-          </h2>
-          <span className="text-sm text-muted-foreground">
-            {String(featured.length).padStart(2, "0")} projects
-          </span>
-        </div>
+        <h2
+          id="selected-work-heading"
+          className="mb-10 font-heading text-3xl sm:text-4xl"
+        >
+          Selected work
+        </h2>
 
         <ProjectGrid projects={featured} className="lg:grid-cols-2" />
 
