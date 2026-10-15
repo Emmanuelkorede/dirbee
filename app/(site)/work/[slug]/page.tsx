@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -12,7 +13,6 @@ import { getWistiaAspectRatio } from "@/lib/video/wistia-thumbnail";
 type ProjectPageProps = {
   params: Promise<{ slug: string }>;
 };
-
 
 export function generateStaticParams() {
   return projects.map((project) => ({ slug: project.slug }));
@@ -36,7 +36,17 @@ export async function generateMetadata({
 
 type Detail = { label: string; value: string };
 
-export default async function ProjectPage({ params }: ProjectPageProps) {
+function ProjectSkeleton() {
+  return (
+    <div className="mx-auto max-w-6xl px-6 pt-28 sm:px-10" aria-hidden="true">
+      <div className="mb-6 h-5 w-20 rounded bg-card" />
+      <div className="aspect-video w-full animate-pulse rounded-xl border border-border bg-card" />
+      <div className="mt-10 h-12 w-2/3 animate-pulse rounded bg-card" />
+    </div>
+  );
+}
+
+async function ProjectContent({ params }: ProjectPageProps) {
   const { slug } = await params;
   const project = getProjectBySlug(slug);
 
@@ -106,5 +116,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         <RelatedProjects project={project} />
       </div>
     </article>
+  );
+}
+
+export default function ProjectPage({ params }: ProjectPageProps) {
+  return (
+    <Suspense fallback={<ProjectSkeleton />}>
+      <ProjectContent params={params} />
+    </Suspense>
   );
 }
