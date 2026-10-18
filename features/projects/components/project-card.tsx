@@ -6,7 +6,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Play } from "lucide-react";
 
 import { BeeLogo } from "@/components/brand/bee-logo";
-import type { Project } from "@/data/projects";
+import type { Project } from "@/features/projects/queries";
 import cn from "@/lib/utils";
 
 type ProjectCardProps = {

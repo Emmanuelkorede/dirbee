@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Mail } from "lucide-react";
 
 import { BrandLockup } from "@/components/brand/brand-lockup";
-import { navLinks, siteConfig } from "@/data/site";
+import { navLinks, siteConfig } from "@/config/site";
 
 export function InstagramIcon({ className }: { className?: string }) {
   return (

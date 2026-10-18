@@ -1,6 +1,6 @@
-import { ProjectCard } from "@/components/projects/project-card";
-import type { Project } from "@/data/projects";
-import { getWistiaThumbnail } from "@/lib/video/wistia-thumbnail";
+import { ProjectCard } from "@/features/projects/components/project-card";
+import type { Project } from "@/features/projects/queries";
+import { getWistiaThumbnail } from "@/lib/wistia/sync";
 import cn from "@/lib/utils";
 
 type ProjectGridProps = {

@@ -1,7 +1,7 @@
 import { ArrowUpRight, Mail } from "lucide-react";
 
 import { InstagramIcon, TikTokIcon } from "@/components/navigation/footer";
-import { siteConfig } from "@/data/site";
+import { siteConfig } from "@/config/site";
 
 const options = [
   {

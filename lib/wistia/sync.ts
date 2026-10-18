@@ -2,7 +2,7 @@
 
 import { cacheLife } from "next/cache";
 
-import { isValidWistiaId } from "@/lib/video/wistia";
+import { isValidWistiaId } from "@/lib/wistia/embed";
 
 type OEmbedResponse = {
   thumbnail_url?: string;

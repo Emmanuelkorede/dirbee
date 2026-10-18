@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { projects } from "@/data/projects";
+import { projects } from "@/features/projects/queries";
 
 export const metadata: Metadata = {
   title: "About House of Bee",
@@ -28,7 +28,7 @@ const sections = [
   },
 ];
 
-// Built from data/projects.ts, with duplicates removed.
+// Built from the project catalog, with duplicates removed.
 const services = [...new Set(projects.map((project) => project.type))];
 
 export default function AboutPage() {

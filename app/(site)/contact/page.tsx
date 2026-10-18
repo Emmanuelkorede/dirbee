@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { ContactOptions } from "@/components/contact/contact-options";
+import { ContactOptions } from "@/features/contact/components/contact-options";
 
 export const metadata: Metadata = {
   title: "Contact",

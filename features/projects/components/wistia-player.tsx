@@ -1,6 +1,6 @@
 import { VideoOff } from "lucide-react";
 
-import { getWistiaEmbedUrl, isValidWistiaId } from "@/lib/video/wistia";
+import { getWistiaEmbedUrl, isValidWistiaId } from "@/lib/wistia/embed";
 import cn from "@/lib/utils";
 
 type WistiaPlayerProps = {
