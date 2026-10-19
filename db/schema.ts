@@ -1,42 +1,81 @@
-import { relations, sql } from "drizzle-orm";
-import { 
-  uuid, 
-  text, 
-  pgTable, 
-  integer, 
-  pgEnum, 
-  timestamp, 
-  boolean, 
-  bigint, 
-  smallint, 
-  check, 
-  index, 
-  uniqueIndex  ,
-  jsonb
+﻿import { relations, sql } from "drizzle-orm";
+import {
+  uuid,
+  text,
+  pgTable,
+  integer,
+  pgEnum,
+  timestamp,
+  boolean,
+  bigint,
+  smallint,
+  check,
+  index,
+  uniqueIndex,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
-//  PostgreSQL Enums 
-export const videoOrientation = pgEnum("video_orientation", ["portrait", "landscape"]);
+//  Enums 
+export const projectType = pgEnum("project_type", [
+  "visualizer",
+  "artist_unveiling_video",
+  "content",
+  "performance_reel",
+]);
+
 export const publishStatus = pgEnum("publish_status", ["draft", "published"]);
 export const reviewStatus = pgEnum("review_status", ["pending", "approved", "rejected"]);
 export const reviewSource = pgEnum("review_source", ["public_form", "admin"]);
 
-// Tables 
+//  Artists 
+// One row per artist. Projects point here, so "related projects" is
+// simply "other projects with the same artist".
+export const artists = pgTable("artists", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+});
+
+//  Clients (labels, management teams, brands) 
+export const clients = pgTable("clients", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+});
+
+//  Projects 
 export const projects = pgTable("projects", {
   id: uuid("id").primaryKey().defaultRandom(),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description"),
-  clientName: text("client_name"),
+
+  artistId: uuid("artist_id")
+    .notNull()
+    .references(() => artists.id, { onDelete: "restrict" }),
+  clientId: uuid("client_id").references(() => clients.id, { onDelete: "set null" }),
+  projectType: projectType("project_type").notNull(),
   projectYear: smallint("project_year"),
-  wistiaShareUrl: text("wistia_share_url").notNull(),
+
+  // Wistia. The media ID is the 10-character ID the embed needs.
   wistiaMediaId: text("wistia_media_id").notNull().unique(),
+  wistiaShareUrl: text("wistia_share_url"),
+  // Fetched from Wistia automatically when the project is saved.
   wistiaThumbnailUrl: text("wistia_thumbnail_url"),
+  videoWidth: integer("video_width"),
+  videoHeight: integer("video_height"),
+  wistiaSyncedAt: timestamp("wistia_synced_at", { withTimezone: true }),
+
+  // Services and other credits, e.g. { label: "Services", value: "Direction, Edit" }
   credits: jsonb("credits")
-  .$type<{ label: string; value: string }[]>()
-  .notNull()
-  .default([]),
-  orientation: videoOrientation("orientation").notNull(),
+    .$type<{ label: string; value: string }[]>()
+    .notNull()
+    .default([]),
+
   isFeatured: boolean("is_featured").notNull().default(false),
   featuredOrder: smallint("featured_order"),
   status: publishStatus("status").notNull().default("draft"),
@@ -53,13 +92,26 @@ export const projects = pgTable("projects", {
     "projects_featured_consistency",
     sql`${table.isFeatured} = (${table.featuredOrder} IS NOT NULL)`
   ),
+    check(
+    "projects_wistia_id_format",
+    sql`${table.wistiaMediaId} ~* '^[a-z0-9]{10}$'`
+  ),
+  check(
+    "projects_published_has_date",
+    sql`${table.status} <> 'published' OR ${table.publishedAt} IS NOT NULL`
+  ),
   uniqueIndex("projects_featured_order_unique")
     .on(table.featuredOrder)
     .where(sql`${table.featuredOrder} IS NOT NULL`),
   index("projects_status_featured_idx")
     .on(table.status, table.isFeatured, table.featuredOrder),
+  index("projects_status_sort_idx").on(table.status, table.sortOrder),
+  index("projects_artist_idx").on(table.artistId),
+  index("projects_client_idx").on(table.clientId),
+  
 ]);
 
+//  Photography 
 export const photoShoots = pgTable("photo_shoots", {
   id: uuid("id").primaryKey().defaultRandom(),
   title: text("title").notNull(),
@@ -71,8 +123,7 @@ export const photoShoots = pgTable("photo_shoots", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 }, (table) => [
-  index("photo_shoots_status_sort_idx")
-    .on(table.status, table.sortOrder),
+  index("photo_shoots_status_sort_idx").on(table.status, table.sortOrder),
 ]);
 
 export const photos = pgTable("photos", {
@@ -92,10 +143,14 @@ export const photos = pgTable("photos", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 }, (table) => [
-  index("photos_shoot_id_display_order_idx")
-    .on(table.shootId, table.displayOrder),
+  index("photos_shoot_id_display_order_idx").on(table.shootId, table.displayOrder),
+  check(
+    "photos_positive_dimensions",
+    sql`${table.sizeBytes} > 0 AND ${table.widthPx} > 0 AND ${table.heightPx} > 0`
+  ),
 ]);
 
+//  Reviews 
 export const reviews = pgTable("reviews", {
   id: uuid("id").primaryKey().defaultRandom(),
   clientName: text("client_name").notNull(),
@@ -121,12 +176,11 @@ export const reviews = pgTable("reviews", {
     "reviews_approved_requires_consent",
     sql`${table.status} <> 'approved' OR ${table.publicationConsent} = true`
   ),
-  index("reviews_status_sort_idx")
-    .on(table.status, table.sortOrder),
-  index("reviews_status_featured_idx")
-    .on(table.status, table.isFeatured),
+  index("reviews_status_sort_idx").on(table.status, table.sortOrder),
+  index("reviews_status_featured_idx").on(table.status, table.isFeatured),
 ]);
 
+//  Site settings (single row) 
 export const siteSettings = pgTable("site_settings", {
   id: smallint("id").primaryKey(),
   reviewsEnabled: boolean("reviews_enabled").notNull().default(false),
@@ -136,12 +190,10 @@ export const siteSettings = pgTable("site_settings", {
   tiktokUrl: text("tiktok_url"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 }, (table) => [
-  check(
-    "site_settings_singleton_check",
-    sql`${table.id} = 1`
-  ),
+  check("site_settings_singleton_check", sql`${table.id} = 1`),
 ]);
 
+//  Admin users 
 export const adminUsers = pgTable("admin_users", {
   authUserId: text("auth_user_id").primaryKey(),
   email: text("email").notNull().unique(),
@@ -149,6 +201,25 @@ export const adminUsers = pgTable("admin_users", {
 });
 
 //  Relations 
+export const artistsRelations = relations(artists, ({ many }) => ({
+  projects: many(projects),
+}));
+
+export const clientsRelations = relations(clients, ({ many }) => ({
+  projects: many(projects),
+}));
+
+export const projectsRelations = relations(projects, ({ one }) => ({
+  artist: one(artists, {
+    fields: [projects.artistId],
+    references: [artists.id],
+  }),
+  client: one(clients, {
+    fields: [projects.clientId],
+    references: [clients.id],
+  }),
+}));
+
 export const photoShootsRelations = relations(photoShoots, ({ many }) => ({
   photos: many(photos),
 }));
