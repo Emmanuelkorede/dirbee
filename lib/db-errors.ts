@@ -10,3 +10,11 @@ export function getPgErrorCode(error: unknown): string | undefined {
 // Common Postgres error codes 
 export const PG_UNIQUE_VIOLATION = "23505";
 export const PG_FOREIGN_KEY_VIOLATION = "23503";
+
+
+//
+export const NAME_ERROR = "Name must contain letters or numbers.";
+
+export function duplicateError(label: string) {
+  return `${label} with this name already exists.`;
+}

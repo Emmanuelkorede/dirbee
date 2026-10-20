@@ -23,13 +23,16 @@ import {
   updateArtistSchema,
 } from "./validation";
 
+import { NAME_ERROR } from "@/lib/db-errors";
+import { duplicateError } from "@/lib/db-errors";
+
+
 function revalidateArtistPages() {
   revalidatePath("/admin/artists", "layout"); // list + edit pages
   revalidatePath("/admin/projects", "layout"); // project form artist selector
 }
 
-const NAME_ERROR = "Name must contain letters or numbers.";
-const DUPLICATE_ERROR = "An artist with this name already exists.";
+const DUPLICATE_ERROR = duplicateError("Artist")
 
 export async function createArtistAction(
   formData: FormData,

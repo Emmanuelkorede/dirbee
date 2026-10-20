@@ -19,13 +19,16 @@ import {
   updateClientSchema,
 } from "./validation";
 
+
+import { NAME_ERROR } from "@/lib/db-errors";
+import { duplicateError } from "@/lib/db-errors";
+
 function revalidateClientPages() {
   revalidatePath("/admin/clients", "layout");
-  revalidatePath("/admin/projects", "layout"); // project form client selector
+  revalidatePath("/admin/projects", "layout"); 
 }
 
-const NAME_ERROR = "Name must contain letters or numbers.";
-const DUPLICATE_ERROR = "A client with this name already exists.";
+const DUPLICATE_ERROR = duplicateError("Client")
 
 export async function createClientAction(
   formData: FormData,
