@@ -1,7 +1,8 @@
 
 export function getPgErrorCode(error: unknown): string | undefined {
-  if (typeof error === "object" && error !== null && "code" in error) {
-    return (error as { code: string }).code;
+  if (typeof error === "object" && error !== null) {
+    if ("code" in error) return (error as { code: string }).code;
+    if ("cause" in error) return getPgErrorCode((error as { cause: unknown }).cause);
   }
   return undefined;
 }
