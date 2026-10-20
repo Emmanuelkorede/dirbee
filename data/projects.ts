@@ -145,6 +145,44 @@ export const projects: Project[] = [
     featured: false,
     relatedProjectIds: ["paragon-1", "paragon-2"],
   },
+    {
+    id: "dont-say-bye",
+    slug: "dont-say-bye",
+    title: "Don’t Say Bye",
+    artist: "Oshamo X Shiloh",
+    client: "emPawa Africa",
+    type: "Content",
+    wistiaId: "c9osezob26",
+    wistiaShareSlug: "wgqub673c5qsxio",
+    featured: false,
+    relatedProjectIds: ["dont-say-bye-2"],
+  },
+
+  {
+    id: "dont-say-bye-2",
+    slug: "dont-say-bye-2",
+    title: "Don’t Say Bye 2",
+    artist: "Oshamo X Shiloh",
+    client: "emPawa Africa",
+    type: "Content",
+    wistiaId: "mpf51delyi",
+    wistiaShareSlug: "e96pdghq8pim0x3",
+    featured: true,
+    relatedProjectIds: ["dont-say-bye"],
+  },
+
+  {
+    id: "daju-2",
+    slug: "daju-2",
+    title: "Daju 2",
+    artist: "Faith Martins",
+    client: "Faith Martins",
+    type: "Content",
+    wistiaId: "i37x6rajm9",
+    wistiaShareSlug: "vq1zt780wfoa1rk",
+    featured: false,
+    relatedProjectIds: ["daju"],
+  },
 ];
 
 export function getProjectBySlug(
