@@ -66,3 +66,8 @@ export function getResendEnv() {
 }
 
 
+export function getWistiaEnv() {
+  return {
+    apiToken: required("WISTIA_API_TOKEN"),
+  };
+}
