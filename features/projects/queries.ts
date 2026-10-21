@@ -1,179 +1,140 @@
+import "server-only";
 
-export type ProjectType =
-  | "Visualizer"
-  | "Artist Unveiling Video"
-  | "Content"
-  | "Performance Reel";
+import { and, asc, desc, eq, inArray, ne, type SQL } from "drizzle-orm";
 
-export type Project = {
-  id: string;
-  slug: string;
-  title: string;
-  artist: string;
-  client: string;
-  type: ProjectType;
+import { db } from "@/db";
+import { artists, clients, projectArtists, projects } from "@/db/schema";
+import type { Project } from "@/types/database";
+import type { ProjectDetail, ProjectWithArtists } from "./types";
+import { projectIdSchema } from "./validation";
 
-  // Verified Wistia media ID used by the video embed.
-  wistiaId: string;
+const isPublished = eq(projects.status, "published");
 
-  // Original share slug supplied by Bee.
-  wistiaShareSlug: string;
+// Public ordering used by every list.
+const publicOrder = [asc(projects.sortOrder), desc(projects.publishedAt)];
 
-  // Optional project information.
-  description?: string;
-  services?: string[];
-  year?: number;
-  aspectRatio?: number;
+// Attach the artists to a list of projects with one extra query.
+async function addArtists(rows: Project[]): Promise<ProjectWithArtists[]> {
+  if (rows.length === 0) return [];
 
-  featured: boolean;
-  relatedProjectIds: string[];
-};
+  const links = await db
+    .select({ projectId: projectArtists.projectId, artist: artists })
+    .from(projectArtists)
+    .innerJoin(artists, eq(artists.id, projectArtists.artistId))
+    .where(inArray(projectArtists.projectId, rows.map((row) => row.id)))
+    .orderBy(asc(projectArtists.sortOrder));
 
-export const projects: Project[] = [
-  {
-    id: "daju",
-    slug: "daju",
-    title: "Daju",
-    artist: "Faith Martins",
-    client: "Faith Martins",
-    type: "Content",
-    wistiaId: "rx66w05za4",
-    wistiaShareSlug: "3z2nyqdxxu2fos8",
-    featured: true,
-    relatedProjectIds: [],
-  },
-  {
-    id: "for-your-tears",
-    slug: "for-your-tears",
-    title: "For Your Tears",
-    artist: "Oshamo X Shiloh",
-    client: "emPawa Africa",
-    type: "Visualizer",
-    wistiaId: "1ndnmqqlge",
-    wistiaShareSlug: "6nok9iikgu6ajg5",
-    featured: true,
-    relatedProjectIds: [],
-  },
-
-  {
-    id: "fortidias",
-    slug: "fortidias",
-    title: "Fortidias 1",
-    artist: "DHYMA",
-    client: "DHYMA",
-    type: "Visualizer",
-    wistiaId: "mt73ms4vyb",
-    wistiaShareSlug: "sdv11ukl3yr0chw",
-    featured: true,
-    relatedProjectIds: ["fortidias-2"],
-  },
-
-  {
-    id: "fortidias-2",
-    slug: "fortidias-2",
-    title: "Fortidias 2",
-    artist: "DHYMA",
-    client: "DHYMA",
-    type: "Content",
-    wistiaId: "4l4h8ms3wa",
-    wistiaShareSlug: "76afgtjajsotdjj",
-    featured: false,
-    relatedProjectIds: ["fortidias"],
-  },
-
-  {
-    id: "the-signal",
-    slug: "the-signal",
-    title: "The Signal",
-    artist: "Alexa Vibez",
-    client: "JMB Records",
-    type: "Artist Unveiling Video",
-    wistiaId: "m8vl24h5me",
-    wistiaShareSlug: "x4qn7gp6uchmwfv",
-    featured: true,
-    relatedProjectIds: ["mulla"],
-  },
-
-  {
-    id: "mulla",
-    slug: "mulla",
-    title: "Mulla",
-    artist: "Alexa Vibez",
-    client: "JMB Records",
-    type: "Performance Reel",
-    wistiaId: "8f9rz9nbh9",
-    wistiaShareSlug: "b8odsy2kcosvgsn",
-    featured: false,
-    relatedProjectIds: ["the-signal"],
-  },
-
-  {
-    id: "paragon-1",
-    slug: "paragon-1",
-    title: "Paragon 1",
-    artist: "QUIRIES",
-    client: "Dhope Management Team",
-    type: "Content",
-    wistiaId: "uixlf0amvx",
-    wistiaShareSlug: "qe7pgn9wcd94hdo",
-    featured: false,
-    relatedProjectIds: ["paragon-2", "paragon-3"],
-  },
-
-  {
-    id: "paragon-2",
-    slug: "paragon-2",
-    title: "Paragon 2",
-    artist: "QUIRIES",
-    client: "Dhope Management Team",
-    type: "Content",
-    wistiaId: "kg5y69qhpx",
-    wistiaShareSlug: "u91jvx1jpg8u8mx",
-    featured: false,
-    relatedProjectIds: ["paragon-1", "paragon-3"],
-  },
-
-  {
-    id: "paragon-3",
-    slug: "paragon-3",
-    title: "Paragon 3",
-    artist: "QUIRIES",
-    client: "Dhope Management Team",
-    type: "Content",
-    wistiaId: "c0oh988cql",
-    wistiaShareSlug: "l9jl8pwgglhp68t",
-    featured: false,
-    relatedProjectIds: ["paragon-1", "paragon-2"],
-  },
-];
-
-export function getProjectBySlug(
-  slug: string
-): Project | undefined {
-  return projects.find((project) => project.slug === slug);
+  return rows.map((row) => ({
+    ...row,
+    artists: links.filter((l) => l.projectId === row.id).map((l) => l.artist),
+  }));
 }
 
-export function getFeaturedProjects(
-  limit = 5
-): Project[] {
-  return projects
-    .filter((project) => project.featured)
-    .slice(0, limit);
+// One project with its artists and client.
+async function getDetail(where: SQL | undefined): Promise<ProjectDetail | null> {
+  const [row] = await db
+    .select({ project: projects, client: clients })
+    .from(projects)
+    .leftJoin(clients, eq(clients.id, projects.clientId))
+    .where(where)
+    .limit(1);
+
+  if (!row) return null;
+
+  const [withArtists] = await addArtists([row.project]);
+  return { ...withArtists, client: row.client };
 }
 
-// Only explicit relationships count.
-// A relationship works in either direction.
-export function getRelatedProjects(
-  current: Project
-): Project[] {
-  return projects.filter((candidate) => {
-    if (candidate.id === current.id) {
-      return false;
-    }
+//  Public (published only) 
 
-    return (
-      current.relatedProjectIds.includes(candidate.id) ||
-      candidate.relatedProjectIds.includes(current.id)
-    );
-  });
+export async function getPublishedProjects() {
+  const rows = await db
+    .select()
+    .from(projects)
+    .where(isPublished)
+    .orderBy(...publicOrder);
+
+  return addArtists(rows);
+}
+
+export async function getFeaturedProjects() {
+  const rows = await db
+    .select()
+    .from(projects)
+    .where(and(isPublished, eq(projects.isFeatured, true)))
+    .orderBy(asc(projects.featuredOrder));
+
+  return addArtists(rows);
+}
+
+// Public project page. Drafts return null.
+export async function getProjectBySlug(slug: string) {
+  return getDetail(and(eq(projects.slug, slug), isPublished));
+}
+
+export async function getProjectsByArtist(artistId: string) {
+  if (!projectIdSchema.safeParse(artistId).success) return [];
+
+  const rows = await db
+    .select()
+    .from(projects)
+    .where(
+      and(
+        isPublished,
+        inArray(
+          projects.id,
+          db
+            .select({ id: projectArtists.projectId })
+            .from(projectArtists)
+            .where(eq(projectArtists.artistId, artistId)),
+        ),
+      ),
+    )
+    .orderBy(...publicOrder);
+
+  return addArtists(rows);
+}
+
+// Other published projects that share at least one artist with this one.
+// inArray(...) with a subquery means a project only appears once,
+// even when it shares two artists with this project.
+export async function getRelatedProjects(projectId: string, limit = 6) {
+  if (!projectIdSchema.safeParse(projectId).success) return [];
+
+  const thisProjectsArtists = db
+    .select({ id: projectArtists.artistId })
+    .from(projectArtists)
+    .where(eq(projectArtists.projectId, projectId));
+
+  const projectsWithThoseArtists = db
+    .select({ id: projectArtists.projectId })
+    .from(projectArtists)
+    .where(inArray(projectArtists.artistId, thisProjectsArtists));
+
+  const rows = await db
+    .select()
+    .from(projects)
+    .where(
+      and(
+        ne(projects.id, projectId),
+        isPublished,
+        inArray(projects.id, projectsWithThoseArtists),
+      ),
+    )
+    .orderBy(...publicOrder)
+    .limit(limit);
+
+  return addArtists(rows);
+}
+
+//  Admin (includes drafts) 
+
+export async function getAdminProjects() {
+  const rows = await db.select().from(projects).orderBy(desc(projects.createdAt));
+  return addArtists(rows);
+}
+
+export async function getProjectById(id: string) {
+  if (!projectIdSchema.safeParse(id).success) return null;
+  return getDetail(eq(projects.id, id));
 }
