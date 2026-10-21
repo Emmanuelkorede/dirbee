@@ -71,3 +71,9 @@ export function getWistiaEnv() {
     apiToken: required("WISTIA_API_TOKEN"),
   };
 }
+
+export function getTurnstileEnv() {
+  return {
+    secretKey: required("TURNSTILE_SECRET_KEY"),
+  };
+}
