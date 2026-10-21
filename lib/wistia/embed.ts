@@ -1,20 +1,20 @@
-// Wistia media hashed IDs are 10 lowercase letters/digits.
-// Share-link slugs (/s/...) are a different, longer identifier.
-const WISTIA_ID_PATTERN = /^[a-z0-9]{10}$/i;
 
-export function isValidWistiaId(
-  id: string | null | undefined
-): id is string {
-  return typeof id === "string" && WISTIA_ID_PATTERN.test(id);
+const MEDIA_ID_PATTERN = /^[a-zA-Z0-9]{10}$/;
+
+export function isValidWistiaMediaId(id: string) {
+  return MEDIA_ID_PATTERN.test(id);
 }
 
-export function getWistiaEmbedUrl(
-  id: string,
-  options: { autoPlay?: boolean } = {}
-): string {
-  const params = new URLSearchParams({ videoFoam: "true" });
+// Takes a resolved media ID and returns what the player needs.
+export function getWistiaEmbed(
+  mediaId: string,
+  width?: number | null,
+  height?: number | null,
+) {
+  if (!isValidWistiaMediaId(mediaId)) return null;
 
-  if (options.autoPlay) params.set("autoPlay", "true");
-
-  return `https://fast.wistia.net/embed/iframe/${id}?${params.toString()}`;
+  return {
+    iframeSrc: `https://fast.wistia.net/embed/iframe/${mediaId}`,
+    aspectRatio: width && height ? width / height : 16 / 9,
+  };
 }
