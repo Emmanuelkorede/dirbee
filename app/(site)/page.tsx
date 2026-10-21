@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 
 import { BeeLogo } from "@/components/brand/bee-logo";
 import { DirectorPreview } from "@/features/director/components/director-preview";
-import { ProjectGrid } from "@/features/projects/components/project-grid";
+import { ProjectGrid } from "@/components/projects/project-grid";
 import { getFeaturedProjects } from "@/features/projects/queries";
 
 export default function HomePage() {

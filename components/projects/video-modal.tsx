@@ -10,7 +10,7 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Maximize2, X } from "lucide-react";
 
-import { WistiaPlayer } from "@/features/projects/components/wistia-player";
+import { WistiaPlayer } from "@/components/projects/wistia-player";
 
 type VideoModalProps = {
   wistiaId: string;

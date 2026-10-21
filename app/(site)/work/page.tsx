@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { ProjectGrid } from "@/features/projects/components/project-grid";
+import { ProjectGrid } from "@/components/projects/project-grid";
 import { projects } from "@/features/projects/queries";
 
 export const metadata: Metadata = {
