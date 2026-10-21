@@ -15,10 +15,10 @@ import type { Client } from "@/types/database";
 import {
   clientIdSchema,
   clientInputSchema,
-  slugSchema,
   updateClientSchema,
 } from "./validation";
 
+import { slugSchema } from "@/lib/validation";
 
 import { NAME_ERROR } from "@/lib/db-errors";
 import { duplicateError } from "@/lib/db-errors";

@@ -9,10 +9,3 @@ export const clientInputSchema = z.object({
 export const updateClientSchema = clientInputSchema.extend({
   id: clientIdSchema,
 });
-
-// Used on the generated slug, never on user input.
-export const slugSchema = z
-  .string()
-  .min(1)
-  .max(160)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);

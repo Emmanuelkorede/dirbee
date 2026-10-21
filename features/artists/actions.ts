@@ -19,9 +19,11 @@ import type { Artist } from "@/types/database";
 import {
   artistIdSchema,
   artistInputSchema,
-  slugSchema,
   updateArtistSchema,
 } from "./validation";
+
+import { slugSchema } from "@/lib/validation";
+
 
 import { NAME_ERROR } from "@/lib/db-errors";
 import { duplicateError } from "@/lib/db-errors";
