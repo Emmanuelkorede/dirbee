@@ -43,9 +43,15 @@ export function getDatabaseEnv() {
 }
 
 export function getNeonAuthEnv() {
+  const cookieSecret = required("NEON_AUTH_COOKIE_SECRET");
+
+  if (cookieSecret.length < 32) {
+    throw new Error("[env] NEON_AUTH_COOKIE_SECRET must be at least 32 characters.");
+  }
+
   return {
     baseUrl: requiredUrl("NEON_AUTH_BASE_URL"),
-    cookieSecret: required("NEON_AUTH_COOKIE_SECRET"),
+    cookieSecret,
   };
 }
 
