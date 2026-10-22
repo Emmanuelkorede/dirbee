@@ -49,8 +49,9 @@ function parseWistiaUrl(input: string): ParsedUrl | null {
   if (share) return { type: "share", id: share[1], cleanUrl };
 
   const media = url.pathname.match(
-    /^\/(?:medias|m)\/([a-zA-Z0-9]{10})(?:\/manage)?\/?$/,
+  /^\/medias\/([a-zA-Z0-9]{10})(?:\/manage)?\/?$/,
   );
+
   if (media) return { type: "media", id: media[1], cleanUrl };
 
   return null;

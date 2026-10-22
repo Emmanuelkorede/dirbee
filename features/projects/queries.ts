@@ -57,12 +57,14 @@ export async function getPublishedProjects() {
   return addArtists(rows);
 }
 
-export async function getFeaturedProjects() {
+
+export async function getFeaturedProjects(limit = 10) {
   const rows = await db
     .select()
     .from(projects)
     .where(and(isPublished, eq(projects.isFeatured, true)))
-    .orderBy(asc(projects.featuredOrder));
+    .orderBy(asc(projects.featuredOrder))
+    .limit(limit);
 
   return addArtists(rows);
 }

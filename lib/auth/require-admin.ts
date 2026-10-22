@@ -11,7 +11,6 @@ import { adminUsers } from "@/db/schema";
 export async function requireAdmin() {
   // Check whether someone is signed in.
   const { data : session } = await auth.getSession();
-    console.log("Signed-in user ID:", session?.user.id);
 
 
   if (!session?.user) {
