@@ -1,4 +1,4 @@
-import { ProjectCard } from "@/components/projects/project-card";
+import { ProjectCard } from "@/features/projects/components/project-card";
 import type { Project } from "@/features/projects/queries";
 import { getWistiaThumbnail } from "@/lib/wistia/sync";
 import cn from "@/lib/utils";

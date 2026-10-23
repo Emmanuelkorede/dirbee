@@ -1,4 +1,4 @@
-import { ProjectGrid } from "@/components/projects/project-grid";
+import { ProjectGrid } from "@/features/projects/components/project-grid";
 import { getRelatedProjects, type Project } from "@/features/projects/queries";
 
 type RelatedProjectsProps = {

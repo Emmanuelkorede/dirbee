@@ -4,9 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-import { RelatedProjects } from "@/components/projects/related-projects";
-import { VideoModal } from "@/components/projects/video-modal";
-import { WistiaPlayer } from "@/components/projects/wistia-player";
+import { RelatedProjects } from "@/features/projects/components/related-projects";
+import { VideoModal } from "@/features/projects/components/video-modal";
+import { WistiaPlayer } from "@/features/projects/components/wistia-player";
 import { getProjectBySlug, projects } from "@/features/projects/queries";
 import { getWistiaAspectRatio } from "@/lib/wistia/sync";
 
