@@ -12,17 +12,14 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <SplashScreen />
       <Navbar />
 
-      {/* The navbar is fixed, so each page adds its own top padding
-          (for example pt-28) unless it has a full-bleed hero. */}
       <main id="main-content">{children}</main>
 
       <Footer />
 
-      {/* Floating theme control: desktop only. On mobile the switcher
-          lives inside the menu overlay. */}
       <div className="fixed bottom-6 left-6 z-40 hidden md:block">
         <ThemeSwitcher />
       </div>
+      
     </ThemeProvider>
   );
 }
