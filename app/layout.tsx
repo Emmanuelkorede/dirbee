@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import "./globals.css";
 import { DM_Sans, Space_Grotesk } from "next/font/google";
+
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import { siteInfo } from "@/lib/site";
+import "./globals.css";
 
 const headingFont = Space_Grotesk({
   variable: "--font-heading-family",
@@ -13,36 +16,28 @@ const bodyFont = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase : new URL("https://www.houseofbee.site/"),
-
-  title: {
-    default: "House of Bee",
-    template: "%s | House of Bee",
+  metadataBase: new URL(siteInfo.url),
+  title: { default: siteInfo.name, template: `%s | ${siteInfo.name}` },
+  description: siteInfo.description,
+  openGraph: {
+    title: siteInfo.name,
+    description: siteInfo.description,
+    siteName: siteInfo.name,
+    type: "website",
   },
-
-  description:
-    "House of Bee is a creative production house for music visuals, artist content and cinematic storytelling, led by Director Bee.",
-
-    openGraph: {
-      title : "House of Bee",
-      description:"House of Bee is a creative production house for music visuals, artist content and cinematic storytelling, led by Director Bee.",
-      siteName : "House of Bee" , 
-      type: "website"
-    }
 };
-
-
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    
     <html
       lang="en"
-      className={`${headingFont.variable} ${bodyFont.variable}`}>
-      
-      <body>
-        {children}
+      suppressHydrationWarning
+      className={`${headingFont.variable} ${bodyFont.variable}`}
+    >
+      <body className="antialiased">
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
-
     </html>
   );
 }
