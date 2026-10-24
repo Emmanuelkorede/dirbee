@@ -1,21 +1,31 @@
 "use client";
 
+import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
-
-import { useTheme } from "@/components/theme/theme-provider";
+import { useEffect, useState } from "react";
 
 type ThemeSwitcherProps = {
   className?: string;
 };
 
 export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
-  const { toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration mismatch by rendering only after client-side mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <div className="size-11" />; // Placeholder to prevent layout shift
+  }
 
   return (
     <button
       type="button"
-      onClick={toggleTheme}
-      aria-label="Toggle between light and dark theme"
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      aria-label="Toggle theme"
       className={[
         "grid size-11 place-items-center rounded-full",
         "border border-border bg-background/70 text-foreground",
@@ -24,10 +34,11 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
         className,
       ].join(" ")}
     >
-      {/* Shown in light mode: click to go dark */}
-      <Moon className="size-5 dark:hidden" aria-hidden="true" />
-      {/* Shown in dark mode: click to go light */}
-      <Sun className="hidden size-5 dark:block" aria-hidden="true" />
+      {theme === "dark" ? (
+        <Sun className="size-5" aria-hidden="true" />
+      ) : (
+        <Moon className="size-5" aria-hidden="true" />
+      )}
     </button>
   );
 }
