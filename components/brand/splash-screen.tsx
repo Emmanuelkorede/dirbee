@@ -13,41 +13,29 @@ type SplashScreenProps = {
 
 const SPLASH_SESSION_KEY = "house-of-bee-splash-seen";
 
-export function SplashScreen({
-  duration = 1700,
-}: SplashScreenProps) {
-  // Starts visible so the server and the browser render the same thing.
-  // Repeat visitors never see it: the inline script in app/layout.tsx
-  // hides it with CSS before the first paint.
+export function SplashScreen({ duration = 1700 }: SplashScreenProps) {
   const [isVisible, setIsVisible] = useState(true);
   const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
-    let alreadySeen = false;
-
     try {
-      alreadySeen =
-        sessionStorage.getItem(SPLASH_SESSION_KEY) === "true";
+      if (sessionStorage.getItem(SPLASH_SESSION_KEY) === "true") {
+        setIsVisible(false);
+        return;
+      }
     } catch {
-      // Continue without session storage if unavailable.
-    }
-
-    if (alreadySeen) {
-      setIsVisible(false);
-      return;
+      // sessionStorage might be blocked in strict private browsing modes
     }
 
     const timeout = window.setTimeout(
       () => {
         try {
           sessionStorage.setItem(SPLASH_SESSION_KEY, "true");
-        } catch {
-          // The splash will still work without session storage.
-        }
-
+        } catch {}
+        
         setIsVisible(false);
       },
-      prefersReducedMotion ? 650 : duration
+      prefersReducedMotion ? 400 : duration
     );
 
     return () => window.clearTimeout(timeout);
@@ -66,7 +54,6 @@ export function SplashScreen({
       {isVisible && (
         <motion.div
           key="house-of-bee-splash"
-          data-splash=""
           className="fixed inset-0 z-[100] grid place-items-center bg-background"
           initial={{ opacity: 1 }}
           exit={{
@@ -101,7 +88,8 @@ export function SplashScreen({
                  C439 225 432 233 421 240
                  C410 227 394 222 375 222
                  H275 V175 L185 122 V445 H95 Z"
-              fill="var(--foreground)"
+              fill="currentColor"
+              className="text-foreground"
               initial={
                 prefersReducedMotion
                   ? { opacity: 0 }
@@ -121,7 +109,8 @@ export function SplashScreen({
                  C419 305 445 332 445 375
                  C445 418 419 445 375 445
                  H275 Z"
-              fill="var(--foreground)"
+              fill="currentColor"
+              className="text-foreground"
               initial={
                 prefersReducedMotion
                   ? { opacity: 0 }
