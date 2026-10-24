@@ -26,6 +26,8 @@ import { duplicateError } from "@/lib/db-errors";
 function revalidateClientPages() {
   revalidatePath("/admin/clients", "layout");
   revalidatePath("/admin/projects", "layout"); 
+  revalidatePath("/work", "layout");   
+    revalidatePath("/", "layout"); 
 }
 
 const DUPLICATE_ERROR = duplicateError("Client")

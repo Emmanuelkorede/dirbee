@@ -29,10 +29,12 @@ import { NAME_ERROR } from "@/lib/db-errors";
 import { duplicateError } from "@/lib/db-errors";
 
 
-function revalidateArtistPages() {
-  revalidatePath("/admin/artists", "layout"); // list + edit pages
-  revalidatePath("/admin/projects", "layout"); // project form artist selector
-}
+function revalidateArtistPages() {   
+  revalidatePath("/admin/artists", "layout");
+  revalidatePath("/admin/projects", "layout");
+  revalidatePath("/work", "layout");   
+  revalidatePath("/", "layout"); 
+}     
 
 const DUPLICATE_ERROR = duplicateError("Artist")
 
