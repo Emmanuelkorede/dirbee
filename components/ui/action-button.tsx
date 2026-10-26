@@ -28,10 +28,10 @@ export function ActionButton({
     if (confirmMessage && !window.confirm(confirmMessage)) return;
 
     setError("");
-    startTransition(async () => {
+      startTransition(async () => {
       const result = await action(id);
-      if (result.success) router.refresh();
-      else setError(result.error);
+      if (!result.success) setError(result.error);
+      router.refresh(); // also after a failure: a partial delete may have changed the data
     });
   }
 
