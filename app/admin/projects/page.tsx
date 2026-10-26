@@ -3,7 +3,8 @@ import Link from "next/link";
 import { buttonStyles } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
-import { FeaturedOrderEditor } from "@/features/projects/components/admin/featured-order-editor";
+import { FeaturedEditor } from "@/features/projects/components/admin/featured-editor";
+import { setFeaturedProjectsAction } from "@/features/projects/actions";
 import { ProjectsTable } from "@/features/projects/components/admin/projects-table";
 import { getAdminProjects } from "@/features/projects/queries";
 import { requireAdmin } from "@/lib/auth/require-admin";
@@ -44,9 +45,15 @@ export default async function AdminProjectsPage() {
           <p className="text-sm text-muted-foreground">Up to 10 published projects, in the order shown on the homepage.</p>
         </div>
 
-        <FeaturedOrderEditor
+        <FeaturedEditor
+          action={setFeaturedProjectsAction}
           options={published.map((project) => ({ id: project.id, label: project.title }))}
           initialIds={featuredIds}
+          max={10}
+          addLabel="Add a published project..."
+          emptyText="Nothing is featured on the homepage yet."
+          saveLabel="Save homepage order"
+          successText="Homepage order saved."
         />
       </section>
     </div>

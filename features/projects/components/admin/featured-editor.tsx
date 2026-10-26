@@ -6,15 +6,30 @@ import { useState, useTransition } from "react";
 import { OrderedPicker } from "@/components/admin/ordered-picker";
 import { Button } from "@/components/ui/button";
 import { FormMessage } from "@/components/ui/form-message";
-import { setFeaturedProjectsAction } from "@/features/projects/actions";
 import type { ActionResult } from "@/types/action";
 
-type FeaturedOrderEditorProps = {
-  options: { id: string; label: string }[]; // published projects only
-  initialIds: string[]; // currently featured, in order
+type FeaturedEditorProps = {
+  // setFeaturedProjectsAction or setFeaturedReviewsAction
+  action: (ids: string[]) => Promise<ActionResult<unknown>>;
+  options: { id: string; label: string }[]; // what can be featured
+  initialIds: string[]; 
+  max: number;
+  addLabel: string;
+  emptyText: string;
+  saveLabel: string;
+  successText: string;
 };
 
-export function FeaturedOrderEditor({ options, initialIds }: FeaturedOrderEditorProps) {
+export function FeaturedEditor({
+  action,
+  options,
+  initialIds,
+  max,
+  addLabel,
+  emptyText,
+  saveLabel,
+  successText,
+}: FeaturedEditorProps) {
   const router = useRouter();
   const [ids, setIds] = useState(initialIds);
   const [result, setResult] = useState<ActionResult<unknown> | null>(null);
@@ -24,7 +39,7 @@ export function FeaturedOrderEditor({ options, initialIds }: FeaturedOrderEditor
 
   function save() {
     startTransition(async () => {
-      const response = await setFeaturedProjectsAction(ids);
+      const response = await action(ids);
       setResult(response);
       if (response.success) router.refresh();
     });
@@ -39,15 +54,15 @@ export function FeaturedOrderEditor({ options, initialIds }: FeaturedOrderEditor
           setIds(next);
           setResult(null);
         }}
-        max={10}
-        addLabel="Add a published project..."
-        emptyText="Nothing is featured on the homepage yet."
+        max={max}
+        addLabel={addLabel}
+        emptyText={emptyText}
       />
 
-      <FormMessage result={result} successText="Homepage order saved." />
+      <FormMessage result={result} successText={successText} />
 
       <Button onClick={save} disabled={!changed || pending}>
-        {pending ? "Saving..." : "Save homepage order"}
+        {pending ? "Saving..." : saveLabel}
       </Button>
     </div>
   );
