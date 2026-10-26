@@ -18,3 +18,8 @@ export function getWistiaEmbed(
     aspectRatio: width && height ? width / height : 16 / 9,
   };
 }
+
+// Wistia resizes thumbnails when the URL ends in image_crop_resized=WIDTHxHEIGHT.
+export function wistiaThumbnail(url: string, width: number, height = Math.round((width * 9) / 16)) {
+  return `${url}?image_crop_resized=${width}x${height}`;
+}
