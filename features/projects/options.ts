@@ -17,3 +17,7 @@ export const PROJECT_TYPE_OPTIONS = (Object.keys(LABELS) as ProjectType[]).map((
 export function projectTypeLabel(type: ProjectType) {
   return LABELS[type];
 }
+
+export function formatArtistNames(artists: { name: string }[]) {
+  return artists.map((artist) => artist.name).join(" x ");
+}
