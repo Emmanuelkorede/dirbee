@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { ContactForm } from "@/features/contact/components/contact-form";
 import { ContactOptions } from "@/features/contact/components/contact-options";
+import { EmailLink } from "@/features/contact/components/email-link";
 import { getSiteSettings } from "@/features/settings/queries";
 
 export const metadata: Metadata = {
@@ -15,8 +16,8 @@ export default async function ContactPage() {
   const settings = await getSiteSettings();
 
   return (
-    <Container size="narrow" className="space-y-16 py-12 sm:py-20">
-      <div className="space-y-6">
+    <Container size="medium" className="space-y-20 py-12 sm:py-20">
+      <header className="space-y-10">
         <PageHeader
           size="large"
           title="Contact"
@@ -24,14 +25,12 @@ export default async function ContactPage() {
         />
 
         {settings.contactEmail && (
-          <p className="text-sm text-muted-foreground">
-            Prefer email?{" "}
-            <a href={`mailto:${settings.contactEmail}`} className="text-foreground underline underline-offset-4">
-              {settings.contactEmail}
-            </a>
-          </p>
+          <div className="space-y-3">
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Prefer email?</p>
+            <EmailLink email={settings.contactEmail} />
+          </div>
         )}
-      </div>
+      </header>
 
       <ContactForm />
 
