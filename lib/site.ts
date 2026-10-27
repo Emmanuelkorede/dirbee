@@ -1,6 +1,7 @@
 export const siteInfo = {
   name: "House of Bee",
   url: "https://www.houseofbee.site",
+  tagline: "A creative production house for music visuals, artist content and cinematic storytelling.",
   description:
     "House of Bee is a creative production house for music visuals, artist content and cinematic storytelling, led by Director Bee.",
 };
