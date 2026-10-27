@@ -1,128 +1,117 @@
+import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 
-import { projects } from "@/data/projects";
+import { buttonStyles } from "@/components/ui/button";
+import { Container } from "@/components/ui/container";
+import { Reveal } from "@/components/ui/reveal";
+import { getClients } from "@/features/clients/queries";
+import { getPublishedProjects } from "@/features/projects/queries";
 
 export const metadata: Metadata = {
   title: "Meet the Director",
-  description: "Meet Bee, the director behind House of Bee.",
+  description: "Meet Director Bee, the Lagos-based visual strategist and director behind House of Bee.",
 };
 
-// PLACEHOLDER COPY: replace each of these with Bee's own words.
-const intro =
-  "Director Bee is a Lagos-based visual strategist and director crafting immersive visual worlds that push African music beyond the expected. Her work lives at the intersection of culture and the surreal; where grounded realities meet elevated, almost supernatural expressions.";
+function NameList({ title, names }: { title: string; names: string[] }) {
+  if (names.length === 0) return null;
 
-const biography = [
-  "Known for translating bold concepts into striking visuals, she approaches every frame as both art and strategy. From shaping an artist’s visual identity to directing full-scale productions, she builds cohesive rollouts that don’t just support the music, but expand its reach and impact.",
-];
-
-const philosophy =
-  "Her philosophy is rooted in narrative longevity. In a fast-moving content landscape, she focuses on creating distinct visual languages that position artists for global recognition. Based in Lagos, Nigeria, she works with artists and teams across markets on projects and select collaborations, bringing a refined West African perspective to the global stage.";
-
-// Built from data/projects.ts, with duplicates removed.
-const artists = [...new Set(projects.map((project) => project.artist))];
-const clients = [...new Set(projects.map((project) => project.client))];
-
-export default function DirectorPage() {
   return (
-    <div className="mx-auto max-w-7xl px-6 pt-32 sm:px-10">
-      <header className="grid items-center gap-10 md:grid-cols-2 lg:gap-20">
-        <div className="relative aspect-[4/5] max-w-md overflow-hidden rounded-xl border border-border bg-card md:max-w-none">
+    <div>
+      <h3 className="mb-4 text-xs uppercase tracking-[0.2em] text-muted-foreground">{title}</h3>
+      <ul className="divide-y divide-border border-b border-border">
+        {names.map((name) => (
+          <li key={name} className="py-3">{name}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default async function DirectorPage() {
+  const [projects, clients] = await Promise.all([getPublishedProjects(), getClients()]);
+
+  // Only people and labels from published projects, in order of first appearance.
+  const artistNames = [...new Set(projects.flatMap((project) => project.artists.map((artist) => artist.name)))];
+
+  const clientNameById = new Map(clients.map((client) => [client.id, client.name]));
+  const clientNames: string[] = [];
+  for (const project of projects) {
+    const name = project.clientId ? clientNameById.get(project.clientId) : undefined;
+    if (name && !clientNames.includes(name)) clientNames.push(name);
+  }
+
+  return (
+    <Container className="space-y-24 py-12 sm:py-20">
+      <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] lg:gap-24">
+        <div className="relative aspect-4/5 overflow-hidden rounded-xl bg-card">
           <Image
             src="/images/bee-portrait.png"
-            alt="Portrait of Director Bee"
+            alt="Director Bee"
             fill
             priority
-            sizes="(min-width: 768px) 50vw, 100vw"
+            sizes="(min-width: 1024px) 28rem, 100vw"
             className="object-cover"
           />
         </div>
 
-        <div className="space-y-6">
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            The director
+        <Reveal className="space-y-6">
+          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">The director</p>
+          <h1 className="font-heading text-5xl uppercase leading-none tracking-tight sm:text-7xl">Director Bee</h1>
+          <p className="max-w-xl leading-relaxed text-foreground/80">
+            Director Bee is a Lagos-based visual strategist and director crafting immersive visual
+            worlds that push African music beyond the expected. Her work lives at the intersection of
+            culture and the surreal; where grounded realities meet elevated, almost supernatural
+            expressions.
           </p>
-          <h1 className="font-heading text-5xl uppercase tracking-tight sm:text-7xl">
-            Director Bee
-          </h1>
-          <p className="max-w-lg text-lg text-muted-foreground">{intro}</p>
-        </div>
-      </header>
-
-      <div className="mt-24 grid gap-16 md:grid-cols-2 lg:gap-20">
-        <section aria-labelledby="biography-heading" className="space-y-5">
-          <h2 id="biography-heading" className="font-heading text-3xl">
-            Biography
-          </h2>
-          {biography.map((paragraph) => (
-            <p key={paragraph} className="leading-relaxed text-muted-foreground">
-              {paragraph}
-            </p>
-          ))}
-        </section>
-
-        <section aria-labelledby="philosophy-heading" className="space-y-5">
-          <h2 id="philosophy-heading" className="font-heading text-3xl">
-            Creative philosophy
-          </h2>
-          <p className="leading-relaxed text-muted-foreground">{philosophy}</p>
-        </section>
+        </Reveal>
       </div>
 
-      <section aria-labelledby="collaborations-heading" className="mt-24">
-        <h2 id="collaborations-heading" className="font-heading text-3xl">
-          Artists and clients
-        </h2>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Drawn from the projects shown on this site.
-        </p>
+      <Reveal className="grid gap-12 md:grid-cols-2 md:gap-16">
+        <section className="space-y-5">
+          <h2 className="font-heading text-3xl tracking-tight">Biography</h2>
+          <p className="leading-relaxed text-foreground/80">
+            Known for translating bold concepts into striking visuals, she approaches every frame as
+            both art and strategy. From shaping an artist’s visual identity to directing full-scale
+            productions, she builds cohesive rollouts that don’t just support the music, but expand
+            its reach and impact.
+          </p>
+        </section>
 
-        <div className="mt-8 grid gap-10 sm:grid-cols-2">
-          <div>
-            <h3 className="mb-4 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              Artists
-            </h3>
-            <ul className="space-y-2">
-              {artists.map((artist) => (
-                <li key={artist} className="border-b border-border pb-2">
-                  {artist}
-                </li>
-              ))}
-            </ul>
+        <section className="space-y-5">
+          <h2 className="font-heading text-3xl tracking-tight">Creative philosophy</h2>
+          <p className="leading-relaxed text-foreground/80">
+            Her philosophy is rooted in narrative longevity. In a fast-moving content landscape, she
+            focuses on creating distinct visual languages that position artists for global
+            recognition. Based in Lagos, Nigeria, she works with artists and teams across markets on
+            projects and select collaborations, bringing a refined West African perspective to the
+            global stage.
+          </p>
+        </section>
+      </Reveal>
+
+      {(artistNames.length > 0 || clientNames.length > 0) && (
+        <Reveal className="space-y-8">
+          <div className="space-y-2">
+            <h2 className="font-heading text-3xl tracking-tight">Artists and clients</h2>
+            <p className="text-sm text-muted-foreground">Drawn from the projects shown on this site.</p>
           </div>
 
-          <div>
-            <h3 className="mb-4 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              Clients and labels
-            </h3>
-            <ul className="space-y-2">
-              {clients.map((client) => (
-                <li key={client} className="border-b border-border pb-2">
-                  {client}
-                </li>
-              ))}
-            </ul>
+          <div className="grid gap-12 md:grid-cols-2 md:gap-16">
+            <NameList title="Artists" names={artistNames} />
+            <NameList title="Clients and labels" names={clientNames} />
           </div>
-        </div>
-      </section>
+        </Reveal>
+      )}
 
-      <div className="mt-20 flex flex-wrap items-center gap-6">
-        <Link
-          href="/work"
-          className="inline-flex items-center gap-2 text-sm font-medium underline-offset-4 hover:underline"
-        >
+      <div className="flex flex-wrap items-center gap-6">
+        <Link href="/work" className="inline-flex items-center gap-2 text-sm font-medium hover:underline">
           View selected work
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
-        <Link
-          href="/contact"
-          className="inline-flex items-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
-        >
-          Get in touch
-        </Link>
+        <Link href="/contact" className={buttonStyles()}>Get in touch</Link>
       </div>
-    </div>
+    </Container>
   );
 }

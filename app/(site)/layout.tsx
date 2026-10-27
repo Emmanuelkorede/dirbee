@@ -24,7 +24,7 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       </a>
 
       <Navbar />
-      <main id="main-content">{children}</main>
+      <main id="main-content" className="pt-15">{children}</main>
 
       <Footer
         instagramUrl={settings.instagramUrl}
