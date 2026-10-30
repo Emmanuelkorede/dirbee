@@ -13,7 +13,7 @@ import { Select } from "@/components/ui/select";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArtistPicker } from "@/features/artists/components/artist-picker";
-import { ClientSelect } from "@/features/clients/components/client-select";
+import { ClientSelect } from "@/features/clients/components/client-picker";
 import { createProjectAction, updateProjectAction } from "@/features/projects/actions";
 import { PROJECT_TYPE_OPTIONS } from "@/features/projects/options";
 import type { ProjectDetail } from "@/features/projects/types";

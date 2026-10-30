@@ -5,18 +5,25 @@ import type { Artist } from "@/types/database";
 
 type ArtistPickerProps = {
   id?: string;
-  artists: Artist[];
+  people: Artist[]; // already filtered to the right type
+  kind: Artist["kind"];
   value: string[];
   onChange: (ids: string[]) => void;
 };
 
-export function ArtistPicker({ artists, ...props }: ArtistPickerProps) {
+export function ArtistPicker({ people, kind, ...props }: ArtistPickerProps) {
+  const starring = kind === "starring";
+
   return (
     <OrderedPicker
-      options={artists.map((artist) => ({ id: artist.id, label: artist.name }))}
+      options={people.map((person) => ({ id: person.id, label: person.name }))}
       max={10}
-      addLabel="Add an artist..."
-      emptyText="No artist chosen yet. Every project needs at least one."
+      addLabel={starring ? "Add someone starring..." : "Add an artist..."}
+      emptyText={
+        starring
+          ? "No one chosen yet. Every project needs at least one."
+          : "No artist chosen yet. Every project needs at least one."
+      }
       {...props}
     />
   );
