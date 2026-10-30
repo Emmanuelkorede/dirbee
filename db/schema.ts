@@ -23,7 +23,9 @@ export const projectTypeEnum = pgEnum("project_type", [
   "artist_unveiling_video",
   "content",
   "performance_reel",
+  "editorials / fashion_film",
 ]);
+
 
 export const publishStatusEnum = pgEnum("publish_status", [
   "draft",
@@ -41,6 +43,12 @@ export const reviewSourceEnum = pgEnum("review_source", [
   "admin",
 ]);
 
+export const personKindEnum = pgEnum("person_kind", [
+  "artist", 
+  "starring"
+]);
+
+
 // Artists
 export const artists = pgTable(
   "artists",
@@ -49,6 +57,9 @@ export const artists = pgTable(
 
     name: text("name").notNull(),
     slug: text("slug").notNull().unique(),
+
+    // "artist" is used on music video projects, "starring" on editorials / fashion film.
+    kind: personKindEnum("kind").notNull().default("artist"),
 
     createdAt: timestamp("created_at", {
       withTimezone: true,
@@ -97,12 +108,7 @@ export const projects = pgTable(
 
     title: text("title").notNull(),
     slug: text("slug").notNull().unique(),
-    description: text("description").notNull(),
-
-    // Optional client: a project can exist without a client.
-    clientId: uuid("client_id").references(() => clients.id, {
-      onDelete: "set null",
-    }),
+    description: text("description"),    
 
     projectType: projectTypeEnum("project_type").notNull(),
     projectYear: smallint("project_year").notNull(),
@@ -200,8 +206,6 @@ export const projects = pgTable(
       table.featuredOrder,
     ),
 
-    index("projects_client_id_idx").on(table.clientId),
-
     // At most one project can occupy each non-null featured position.
     uniqueIndex("projects_featured_order_unique")
       .on(table.featuredOrder)
@@ -241,6 +245,27 @@ export const projectArtists = pgTable(
       table.artistId,
       table.sortOrder,
     ),
+  ],
+);
+
+// A project can have several clients, like it has several artists.
+export const projectClients = pgTable(
+  "project_clients",
+  {
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+
+    // Deleting a client removes it from its projects. The projects stay.
+    clientId: uuid("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+
+    sortOrder: integer("sort_order").notNull().default(0),
+  },
+  (table) => [
+    primaryKey({ name: "project_clients_pk", columns: [table.projectId, table.clientId] }),
+    index("project_clients_client_id_idx").on(table.clientId),
   ],
 );
 
@@ -485,17 +510,19 @@ export const artistsRelations = relations(artists, ({ many }) => ({
   projectArtists: many(projectArtists),
 }));
 
+
 export const clientsRelations = relations(clients, ({ many }) => ({
-  projects: many(projects),
+  projectClients: many(projectClients),
 }));
 
-export const projectsRelations = relations(projects, ({ one, many }) => ({
-  client: one(clients, {
-    fields: [projects.clientId],
-    references: [clients.id],
-  }),
-
+export const projectsRelations = relations(projects, ({ many }) => ({
   projectArtists: many(projectArtists),
+  projectClients: many(projectClients),
+}));
+
+export const projectClientsRelations = relations(projectClients, ({ one }) => ({
+  project: one(projects, { fields: [projectClients.projectId], references: [projects.id] }),
+  client: one(clients, { fields: [projectClients.clientId], references: [clients.id] }),
 }));
 
 export const projectArtistsRelations = relations(

@@ -7,6 +7,7 @@ import {
   photoShoots,
   photos,
   projectArtists,
+  projectClients,
   projects,
   reviews,
   siteSettings,
@@ -23,6 +24,7 @@ export type NewProject = InferInsertModel<typeof projects>;
 
 export type ProjectArtist =
   InferSelectModel<typeof projectArtists>;
+export type ProjectClient = InferSelectModel<typeof projectClients>;
 
 export type PhotoShoot = InferSelectModel<typeof photoShoots>;
 export type NewPhotoShoot = InferInsertModel<typeof photoShoots>;
