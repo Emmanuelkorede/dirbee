@@ -3,7 +3,7 @@ import "server-only";
 import { asc, count, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { clients, projects } from "@/db/schema";
+import { clients, projectClients } from "@/db/schema";
 import { clientIdSchema } from "./validation";
 
 export async function getClients() {
@@ -17,10 +17,10 @@ export async function getClientsWithProjectCount() {
       id: clients.id,
       name: clients.name,
       slug: clients.slug,
-      projectCount: count(projects.id),
+      projectCount: count(projectClients.projectId),
     })
     .from(clients)
-    .leftJoin(projects, eq(projects.clientId, clients.id))
+    .leftJoin(projectClients, eq(projectClients.clientId, clients.id))
     .groupBy(clients.id)
     .orderBy(asc(clients.name));
 }
