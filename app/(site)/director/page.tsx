@@ -6,8 +6,7 @@ import Link from "next/link";
 import { buttonStyles } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/ui/reveal";
-import { getClients } from "@/features/clients/queries";
-import { getPublishedProjects } from "@/features/projects/queries";
+import { getPublishedNames } from "@/features/projects/queries";
 
 export const metadata: Metadata = {
   title: "Meet the Director",
@@ -30,17 +29,7 @@ function NameList({ title, names }: { title: string; names: string[] }) {
 }
 
 export default async function DirectorPage() {
-  const [projects, clients] = await Promise.all([getPublishedProjects(), getClients()]);
-
-  // Only people and labels from published projects, in order of first appearance.
-  const artistNames = [...new Set(projects.flatMap((project) => project.artists.map((artist) => artist.name)))];
-
-  const clientNameById = new Map(clients.map((client) => [client.id, client.name]));
-  const clientNames: string[] = [];
-  for (const project of projects) {
-    const name = project.clientId ? clientNameById.get(project.clientId) : undefined;
-    if (name && !clientNames.includes(name)) clientNames.push(name);
-  }
+  const { artists: artistNames, clients: clientNames } = await getPublishedNames();
 
   return (
     <Container className="space-y-24 py-12 sm:py-20">

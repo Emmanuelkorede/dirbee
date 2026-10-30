@@ -5,11 +5,10 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { Container } from "@/components/ui/container";
-import { Reveal } from "@/components/ui/reveal";
 import { ProjectDetails } from "@/features/projects/components/public/project-details";
 import { RelatedProjects } from "@/features/projects/components/public/related-projects";
 import { WistiaPlayer } from "@/features/projects/components/public/wistia-player";
-import { projectTypeLabel } from "@/features/projects/options";
+import { formatArtistNames, projectGroup, projectTypeLabel } from "@/features/projects/options";
 import { getProjectBySlug, getPublishedProjects, getRelatedProjects } from "@/features/projects/queries";
 import { wistiaThumbnail } from "@/lib/wistia/embed";
 
@@ -29,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const project = await loadProject(slug);
   if (!project) return { title: "Project not found" };
 
-  const description = project.description.slice(0, 160);
+  const description = project.description?.slice(0, 160) ?? `${project.title}, by House of Bee.`;
   const image = project.wistiaThumbnailUrl
     ? wistiaThumbnail(project.wistiaThumbnailUrl, 1200, 630)
     : undefined;
@@ -47,12 +46,23 @@ export default async function ProjectPage({ params }: Props) {
   if (!project || !project.wistiaMediaId) notFound();
 
   const related = await getRelatedProjects(project.id, 3);
-  const artistNames = project.artists.map((artist) => artist.name).join(", ");
+  const people = formatArtistNames(project.artists);
+  const isEditorial = projectGroup(project.projectType) === "editorial";
 
-  // The table: client, artists, type, year, then every credit.
+  // The table: clients, people, type, year, then every credit.
   const rows: { label: string; value: string }[] = [];
-  if (project.client) rows.push({ label: "Client", value: project.client.name });
-  rows.push({ label: project.artists.length > 1 ? "Artists" : "Artist", value: artistNames });
+
+  if (project.clients.length > 0) {
+    rows.push({
+      label: project.clients.length > 1 ? "Clients" : "Client",
+      value: project.clients.map((client) => client.name).join(", "),
+    });
+  }
+
+  rows.push({
+    label: isEditorial ? "Starring" : project.artists.length > 1 ? "Artists" : "Artist",
+    value: people,
+  });
   rows.push({ label: "Type", value: projectTypeLabel(project.projectType) });
   rows.push({ label: "Year", value: String(project.projectYear) });
   for (const credit of project.credits) rows.push(credit);
@@ -65,23 +75,22 @@ export default async function ProjectPage({ params }: Props) {
           All work
         </Link>
 
-        <Reveal>
-          <WistiaPlayer
-            mediaId={project.wistiaMediaId}
-            title={project.title}
-            artistNames={artistNames}
-            thumbnailUrl={project.wistiaThumbnailUrl}
-            width={project.videoWidth}
-            height={project.videoHeight}
-          />
-        </Reveal>
+        <WistiaPlayer
+          mediaId={project.wistiaMediaId}
+          title={project.title}
+          artistNames={people}
+          thumbnailUrl={project.wistiaThumbnailUrl}
+          width={project.videoWidth}
+          height={project.videoHeight}
+        />
       </div>
 
       <div className="space-y-10">
         <h1 className="font-heading text-5xl uppercase leading-none tracking-tight sm:text-7xl">{project.title}</h1>
 
-        {/* Delete this line if you do not want the description shown publicly. */}
-        <p className="max-w-2xl whitespace-pre-line leading-relaxed text-foreground/80">{project.description}</p>
+        {project.description && (
+          <p className="max-w-2xl whitespace-pre-line leading-relaxed text-foreground/80">{project.description}</p>
+        )}
 
         <ProjectDetails rows={rows} />
       </div>
