@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, inArray } from "drizzle-orm";
+import { and, count, eq, inArray, max } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import z from "zod";
 
@@ -15,6 +15,7 @@ import {
   reviewIdSchema,
   submitReviewSchema,
   updateReviewSchema,
+  createReviewSchema
 } from "./validation";
 
 function revalidateReviewPages() {
@@ -67,6 +68,61 @@ export async function submitReviewAction(input: unknown): Promise<ActionResult> 
   }
 }
 
+// Admin submission :Saved as approved, so it is live as soon as reviews are switched on in Settings.
+export async function createReviewAction(
+  input: unknown,
+): Promise<ActionResult<{ id: string }>> {
+  await requireAdmin();
+
+  const parsed = createReviewSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Please check the review details.",
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
+    };
+  }
+  const data = parsed.data;
+
+  try {
+    // A featured review goes to the end of the featured list.
+    let sortOrder = 0;
+    if (data.featured) {
+      const [featured] = await db
+        .select({ total: count(), last: max(reviews.sortOrder) })
+        .from(reviews)
+        .where(eq(reviews.isFeatured, true));
+
+      if (featured.total >= 20) {
+        return { success: false, error: "You can feature at most 20 reviews. Remove one first." };
+      }
+      sortOrder = (featured.last ?? -1) + 1;
+    }
+
+    const [review] = await db
+      .insert(reviews)
+      .values({
+        clientName: data.clientName,
+        email: data.email || null,
+        role: data.role || null,
+        company: data.company || null,
+        reviewText: data.reviewText,
+        publicationConsent: true, // confirmed by the admin in the form
+        status: "approved",
+        approvedAt: new Date(),
+        isFeatured: data.featured,
+        sortOrder,
+        submissionSource: "admin",
+      })
+      .returning({ id: reviews.id });
+
+    revalidateReviewPages();
+    return { success: true, data: { id: review.id } };
+  } catch (error) {
+    console.error("createReviewAction failed:", error);
+    return { success: false, error: "Unable to add the review." };
+  }
+}
 //  Admin: moderate 
 
 export async function approveReviewAction(id: string): Promise<ActionResult> {

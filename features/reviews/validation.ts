@@ -37,3 +37,12 @@ export const featuredReviewIdsSchema = z
   .refine((ids) => new Set(ids).size === ids.length, "A review can only be featured once.");
 
 export type ReviewFilters = z.infer<typeof reviewFiltersSchema>;
+
+
+// Admin adds a review on someone's behalf .
+export const createReviewSchema = reviewFields.extend({
+  publicationConsent: z.literal(true, {
+    error: "Confirm that the reviewer agreed to publication.",
+  }),
+  featured: z.boolean(),
+});
