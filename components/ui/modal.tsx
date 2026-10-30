@@ -6,8 +6,8 @@ import { useEffect, useId, useRef, type ReactNode } from "react";
 import cn from "@/lib/utils";
 
 const sizes = {
-  md: "w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-border bg-card shadow-2xl",
-  xl: "w-[calc(100%-2rem)] max-w-5xl rounded-2xl border border-border bg-card shadow-2xl",
+  md: "max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg overflow-y-auto rounded-2xl border border-border bg-card shadow-2xl",
+  xl: "max-h-[90dvh] w-[calc(100%-2rem)] max-w-5xl overflow-y-auto rounded-2xl border border-border bg-card shadow-2xl",
   full: "h-dvh w-dvw max-h-none max-w-none bg-background",
 };
 
