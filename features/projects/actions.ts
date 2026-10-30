@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import z from "zod";
 
 import { db } from "@/db";
-import { projectArtists, projects } from "@/db/schema";
+import { artists, projectArtists, projectClients, projects } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import {
   getPgErrorCode,
@@ -17,10 +17,12 @@ import { generateSlug } from "@/lib/utils";
 import { slugSchema } from "@/lib/validation";
 
 import type { ActionResult } from "@/types/action";
+import type { Project } from "@/types/database";
 import { WistiaColumns } from "./types";
 
 import { syncToColumns } from "./wistia";
 import { NO_WISTIA } from "./wistia";
+import { personKindFor } from "./options";
 
 import {
   featuredIdsSchema,
@@ -54,13 +56,37 @@ function dbFailure(error: unknown, action: string): Failure {
     return { success: false, error: "A project with this title or video already exists." };
   }
   if (code === PG_FOREIGN_KEY_VIOLATION) {
-    return { success: false, error: "A selected artist or the client no longer exists." };
+    return { success: false, error: "A selected person or client no longer exists." };
   }
 
   console.error(`${action} project failed:`, error);
   return { success: false, error: `Unable to ${action} the project.` };
 }
 
+
+// Editorials / fashion film use people marked "Starring". Everything else uses "Artist".
+async function checkPeople(
+  projectType: Project["projectType"],
+  artistIds: string[],
+): Promise<Failure | null> {
+  const wanted = personKindFor(projectType);
+
+  const people = await db
+    .select({ kind: artists.kind })
+    .from(artists)
+    .where(inArray(artists.id, artistIds));
+
+  if (people.length === artistIds.length && people.every((person) => person.kind === wanted)) {
+    return null;
+  }
+
+  const message =
+    wanted === "starring"
+      ? "Editorials / Fashion Film can only use people marked as Starring."
+      : "This project type can only use people marked as Artist.";
+
+  return { success: false, error: message, fieldErrors: { artistIds: [message] } };
+}
 
 //  Create 
 export async function createProjectAction(
@@ -77,6 +103,9 @@ export async function createProjectAction(
     return { success: false, error: TITLE_ERROR, fieldErrors: { title: [TITLE_ERROR] } };
   }
 
+  const peopleProblem = await checkPeople(data.projectType, data.artistIds);
+  if (peopleProblem) return peopleProblem;
+
   // The network call happens before the database write.
   let wistia = NO_WISTIA;
   let syncWarning: string | undefined;
@@ -86,8 +115,6 @@ export async function createProjectAction(
     syncWarning = synced.error;
   }
 
-  
-
   try {
     const id = await db.transaction(async (tx) => {
       const [project] = await tx
@@ -95,8 +122,7 @@ export async function createProjectAction(
         .values({
           title: data.title,
           slug,
-          description: data.description,
-          clientId: data.clientId,
+          description: data.description || null,
           projectType: data.projectType,
           projectYear: data.projectYear,
           credits: data.credits,
@@ -111,6 +137,16 @@ export async function createProjectAction(
           sortOrder: index,
         })),
       );
+
+      if (data.clientIds.length > 0) {
+        await tx.insert(projectClients).values(
+          data.clientIds.map((clientId, index) => ({
+            projectId: project.id,
+            clientId,
+            sortOrder: index,
+          })),
+        );
+      }
 
       return project.id;
     });
@@ -137,6 +173,9 @@ export async function updateProjectAction(
   if (!slugSchema.safeParse(slug).success) {
     return { success: false, error: TITLE_ERROR, fieldErrors: { title: [TITLE_ERROR] } };
   }
+
+  const peopleProblem = await checkPeople(data.projectType, data.artistIds);
+  if (peopleProblem) return peopleProblem;
 
   const [existing] = await db
     .select()
@@ -167,15 +206,14 @@ export async function updateProjectAction(
     syncWarning = synced.error;
   }
 
-    try {
+  try {
     await db.transaction(async (tx) => {
       await tx
         .update(projects)
         .set({
           title: data.title,
           slug,
-          description: data.description,
-          clientId: data.clientId,
+          description: data.description || null,
           projectType: data.projectType,
           projectYear: data.projectYear,
           credits: data.credits,
@@ -183,7 +221,7 @@ export async function updateProjectAction(
         })
         .where(eq(projects.id, data.id));
 
-      // Replace the artist links.
+      // Replace the people and client links.
       await tx.delete(projectArtists).where(eq(projectArtists.projectId, data.id));
       await tx.insert(projectArtists).values(
         data.artistIds.map((artistId, index) => ({
@@ -192,6 +230,17 @@ export async function updateProjectAction(
           sortOrder: index,
         })),
       );
+
+      await tx.delete(projectClients).where(eq(projectClients.projectId, data.id));
+      if (data.clientIds.length > 0) {
+        await tx.insert(projectClients).values(
+          data.clientIds.map((clientId, index) => ({
+            projectId: data.id,
+            clientId,
+            sortOrder: index,
+          })),
+        );
+      }
     });
 
     revalidateProjectPages();

@@ -14,17 +14,20 @@ const uniqueIds = (ids: string[]) => new Set(ids).size === ids.length;
 
 export const projectInputSchema = z.object({
   title: z.string().trim().min(1, "Title is required.").max(150),
-  description: z.string().trim().min(1, "Description is required.").max(5000),
+  description: z.string().trim().max(5000), // empty = no description
   projectType: z.enum(projectTypeEnum.enumValues),
   projectYear: z.coerce.number().int().min(1900).max(2200),
 
-  clientId: z.uuid().nullable(),
+  clientIds: z
+    .array(z.uuid())
+    .max(10)
+    .refine(uniqueIds, "Each client can only be added once."),
 
   artistIds: z
     .array(z.uuid())
-    .min(1, "Choose at least one artist.")
+    .min(1, "Add at least one person.")
     .max(10)
-    .refine(uniqueIds, "Each artist can only be added once."),
+    .refine(uniqueIds, "Each person can only be added once."),
 
   credits: z.array(creditSchema).max(20),
 

@@ -1,9 +1,9 @@
 import "server-only";
 
-import { and, asc, desc, eq, inArray, ne, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, type SQL } from "drizzle-orm";
 
 import { db } from "@/db";
-import { artists, clients, projectArtists, projects } from "@/db/schema";
+import { artists, clients, projectArtists, projectClients, projects } from "@/db/schema";
 import type { Project } from "@/types/database";
 import type { ProjectDetail, ProjectWithArtists } from "./types";
 import { projectIdSchema } from "./validation";
@@ -13,7 +13,7 @@ const isPublished = eq(projects.status, "published");
 // Public ordering used by every list.
 const publicOrder = [asc(projects.sortOrder), desc(projects.publishedAt)];
 
-// Attach the artists to a list of projects with one extra query.
+// Attach the people (artists or starring) to a list of projects with one extra query.
 async function addArtists(rows: Project[]): Promise<ProjectWithArtists[]> {
   if (rows.length === 0) return [];
 
@@ -26,39 +26,35 @@ async function addArtists(rows: Project[]): Promise<ProjectWithArtists[]> {
 
   return rows.map((row) => ({
     ...row,
-    artists: links.filter((l) => l.projectId === row.id).map((l) => l.artist),
+    artists: links.filter((link) => link.projectId === row.id).map((link) => link.artist),
   }));
 }
 
-// One project with its artists and client.
+// One project with its people and clients.
 async function getDetail(where: SQL | undefined): Promise<ProjectDetail | null> {
-  const [row] = await db
-    .select({ project: projects, client: clients })
-    .from(projects)
-    .leftJoin(clients, eq(clients.id, projects.clientId))
-    .where(where)
-    .limit(1);
+  const [project] = await db.select().from(projects).where(where).limit(1);
+  if (!project) return null;
 
-  if (!row) return null;
+  const [withArtists] = await addArtists([project]);
 
-  const [withArtists] = await addArtists([row.project]);
-  return { ...withArtists, client: row.client };
+  const clientRows = await db
+    .select({ client: clients })
+    .from(projectClients)
+    .innerJoin(clients, eq(clients.id, projectClients.clientId))
+    .where(eq(projectClients.projectId, project.id))
+    .orderBy(asc(projectClients.sortOrder));
+
+  return { ...withArtists, clients: clientRows.map((row) => row.client) };
 }
 
 //  Public (published only) 
 
 export async function getPublishedProjects() {
-  const rows = await db
-    .select()
-    .from(projects)
-    .where(isPublished)
-    .orderBy(...publicOrder);
-
+  const rows = await db.select().from(projects).where(isPublished).orderBy(...publicOrder);
   return addArtists(rows);
 }
 
-
-export async function getFeaturedProjects(limit = 10) {
+export async function getFeaturedProjects(limit = 6) {
   const rows = await db
     .select()
     .from(projects)
@@ -97,36 +93,59 @@ export async function getProjectsByArtist(artistId: string) {
   return addArtists(rows);
 }
 
-// Other published projects that share at least one artist with this one.
-// inArray(...) with a subquery means a project only appears once,
-// even when it shares two artists with this project.
+// Other published projects that share at least one person with this one.
 export async function getRelatedProjects(projectId: string, limit = 6) {
   if (!projectIdSchema.safeParse(projectId).success) return [];
 
-  const thisProjectsArtists = db
-    .select({ id: projectArtists.artistId })
+  const mine = await db
+    .select({ artistId: projectArtists.artistId })
     .from(projectArtists)
     .where(eq(projectArtists.projectId, projectId));
 
-  const projectsWithThoseArtists = db
-    .select({ id: projectArtists.projectId })
+  const artistIds = mine.map((row) => row.artistId);
+  if (artistIds.length === 0) return [];
+
+  // selectDistinct: a project shared through two people appears once.
+  const shared = await db
+    .selectDistinct({ projectId: projectArtists.projectId })
     .from(projectArtists)
-    .where(inArray(projectArtists.artistId, thisProjectsArtists));
+    .where(inArray(projectArtists.artistId, artistIds));
+
+  const relatedIds = shared.map((row) => row.projectId).filter((id) => id !== projectId);
+  if (relatedIds.length === 0) return [];
 
   const rows = await db
     .select()
     .from(projects)
-    .where(
-      and(
-        ne(projects.id, projectId),
-        isPublished,
-        inArray(projects.id, projectsWithThoseArtists),
-      ),
-    )
+    .where(and(inArray(projects.id, relatedIds), isPublished))
     .orderBy(...publicOrder)
     .limit(limit);
 
   return addArtists(rows);
+}
+
+// For the director page: names from published projects. Only "Artist" people, not Starring.
+export async function getPublishedNames() {
+  const people = await db
+    .selectDistinct({ name: artists.name })
+    .from(artists)
+    .innerJoin(projectArtists, eq(projectArtists.artistId, artists.id))
+    .innerJoin(projects, eq(projects.id, projectArtists.projectId))
+    .where(and(isPublished, eq(artists.kind, "artist")))
+    .orderBy(asc(artists.name));
+
+  const clientRows = await db
+    .selectDistinct({ name: clients.name })
+    .from(clients)
+    .innerJoin(projectClients, eq(projectClients.clientId, clients.id))
+    .innerJoin(projects, eq(projects.id, projectClients.projectId))
+    .where(isPublished)
+    .orderBy(asc(clients.name));
+
+  return {
+    artists: people.map((person) => person.name),
+    clients: clientRows.map((client) => client.name),
+  };
 }
 
 //  Admin (includes drafts) 
