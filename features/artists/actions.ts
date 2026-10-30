@@ -8,85 +8,37 @@ import { db } from "@/db";
 import { artists, projectArtists } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import {
+  duplicateError,
   getPgErrorCode,
+  NAME_ERROR,
   PG_FOREIGN_KEY_VIOLATION,
   PG_UNIQUE_VIOLATION,
 } from "@/lib/db-errors";
 import { generateSlug } from "@/lib/utils";
+import { slugSchema } from "@/lib/validation";
 import type { ActionResult } from "@/types/action";
 import type { Artist } from "@/types/database";
 
-import {
-  artistIdSchema,
-  artistInputSchema,
-  updateArtistSchema,
-} from "./validation";
+import { artistIdSchema, artistInputSchema, updateArtistSchema } from "./validation";
 
-import { slugSchema } from "@/lib/validation";
-
-
-import { NAME_ERROR } from "@/lib/db-errors";
-import { duplicateError } from "@/lib/db-errors";
-
-
-function revalidateArtistPages() {   
+function revalidateArtistPages() {
   revalidatePath("/admin/artists", "layout");
-  revalidatePath("/admin/projects", "layout");
-  revalidatePath("/work", "layout");   
-  revalidatePath("/", "layout"); 
-}     
-
-const DUPLICATE_ERROR = duplicateError("Artist")
-
-export async function createArtistAction(
-  formData: FormData,
-): Promise<ActionResult<Artist>> {
-  await requireAdmin();
-
-  const parsed = artistInputSchema.safeParse({ name: formData.get("name") });
-  if (!parsed.success) {
-    return {
-      success: false,
-      error: "Please check the artist details.",
-      fieldErrors: z.flattenError(parsed.error).fieldErrors, 
-    };
-  }
-
-  const slug = generateSlug(parsed.data.name);
-  if (!slugSchema.safeParse(slug).success) {
-    return { success: false, error: NAME_ERROR, fieldErrors: { name: [NAME_ERROR] } };
-  }
-
-  try {
-    const [artist] = await db
-      .insert(artists)
-      .values({ name: parsed.data.name, slug })
-      .returning();
-
-    revalidateArtistPages();
-    return { success: true, data: artist };
-  } catch (error) {
-    if (getPgErrorCode(error) === PG_UNIQUE_VIOLATION) {
-      return { success: false, error: DUPLICATE_ERROR, fieldErrors: { name: [DUPLICATE_ERROR] } };
-    }
-    console.error("createArtistAction failed:", error);
-    return { success: false, error: "Unable to create the artist." };
-  }
+  revalidatePath("/admin/projects", "layout"); // project form people picker
+  revalidatePath("/work", "layout"); // public pages show these names
+  revalidatePath("/", "layout");
 }
 
-export async function updateArtistAction(
-  formData: FormData,
-): Promise<ActionResult<Artist>> {
+export async function createArtistAction(formData: FormData): Promise<ActionResult<Artist>> {
   await requireAdmin();
 
-  const parsed = updateArtistSchema.safeParse({
-    id: formData.get("id"),
+  const parsed = artistInputSchema.safeParse({
     name: formData.get("name"),
+    kind: formData.get("kind"),
   });
   if (!parsed.success) {
     return {
       success: false,
-      error: "Please check the artist details.",
+      error: "Please check the details.",
       fieldErrors: z.flattenError(parsed.error).fieldErrors,
     };
   }
@@ -97,22 +49,80 @@ export async function updateArtistAction(
   }
 
   try {
-    const [artist] = await db
+    const [person] = await db
+      .insert(artists)
+      .values({ name: parsed.data.name, slug, kind: parsed.data.kind })
+      .returning();
+
+    revalidateArtistPages();
+    return { success: true, data: person };
+  } catch (error) {
+    if (getPgErrorCode(error) === PG_UNIQUE_VIOLATION) {
+      const message = duplicateError("Talent");
+      return { success: false, error: message, fieldErrors: { name: [message] } };
+    }
+    console.error("createArtistAction failed:", error);
+    return { success: false, error: "Unable to add this person." };
+  }
+}
+
+export async function updateArtistAction(formData: FormData): Promise<ActionResult<Artist>> {
+  await requireAdmin();
+
+  const parsed = updateArtistSchema.safeParse({
+    id: formData.get("id"),
+    name: formData.get("name"),
+    kind: formData.get("kind"),
+  });
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Please check the details.",
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
+    };
+  }
+
+  const slug = generateSlug(parsed.data.name);
+  if (!slugSchema.safeParse(slug).success) {
+    return { success: false, error: NAME_ERROR, fieldErrors: { name: [NAME_ERROR] } };
+  }
+
+  try {
+    const [existing] = await db
+      .select({ kind: artists.kind })
+      .from(artists)
+      .where(eq(artists.id, parsed.data.id))
+      .limit(1);
+    if (!existing) return { success: false, error: "Person not found." };
+
+    // Switching Artist <-> Starring would break the projects they are on.
+    if (existing.kind !== parsed.data.kind) {
+      const [usage] = await db
+        .select({ projectCount: count() })
+        .from(projectArtists)
+        .where(eq(projectArtists.artistId, parsed.data.id));
+
+      if (usage.projectCount > 0) {
+        const message = `Used by ${usage.projectCount} project(s). Remove them from those projects before changing the type.`;
+        return { success: false, error: message, fieldErrors: { kind: [message] } };
+      }
+    }
+
+    const [person] = await db
       .update(artists)
-      .set({ name: parsed.data.name, slug })
+      .set({ name: parsed.data.name, slug, kind: parsed.data.kind })
       .where(eq(artists.id, parsed.data.id))
       .returning();
 
-    if (!artist) return { success: false, error: "Artist not found." };
-
     revalidateArtistPages();
-    return { success: true, data: artist };
+    return { success: true, data: person };
   } catch (error) {
     if (getPgErrorCode(error) === PG_UNIQUE_VIOLATION) {
-      return { success: false, error: DUPLICATE_ERROR, fieldErrors: { name: [DUPLICATE_ERROR] } };
+      const message = duplicateError("Talent");
+      return { success: false, error: message, fieldErrors: { name: [message] } };
     }
     console.error("updateArtistAction failed:", error);
-    return { success: false, error: "Unable to update the artist." };
+    return { success: false, error: "Unable to update this person." };
   }
 }
 
@@ -120,7 +130,7 @@ export async function deleteArtistAction(id: string): Promise<ActionResult> {
   await requireAdmin();
 
   const parsedId = artistIdSchema.safeParse(id);
-  if (!parsedId.success) return { success: false, error: "Invalid artist." };
+  if (!parsedId.success) return { success: false, error: "Invalid person." };
 
   try {
     const [usage] = await db
@@ -131,7 +141,7 @@ export async function deleteArtistAction(id: string): Promise<ActionResult> {
     if (usage.projectCount > 0) {
       return {
         success: false,
-        error: `This artist is used by ${usage.projectCount} project(s). Remove them from those projects first.`,
+        error: `Used by ${usage.projectCount} project(s). Remove them from those projects first.`,
       };
     }
 
@@ -140,18 +150,15 @@ export async function deleteArtistAction(id: string): Promise<ActionResult> {
       .where(eq(artists.id, parsedId.data))
       .returning({ id: artists.id });
 
-    if (deleted.length === 0) return { success: false, error: "Artist not found." };
+    if (deleted.length === 0) return { success: false, error: "Person not found." };
 
     revalidateArtistPages();
     return { success: true };
   } catch (error) {
     if (getPgErrorCode(error) === PG_FOREIGN_KEY_VIOLATION) {
-      return {
-        success: false,
-        error: "This artist was just added to a project and can't be deleted.",
-      };
+      return { success: false, error: "This person was just added to a project and can't be deleted." };
     }
     console.error("deleteArtistAction failed:", error);
-    return { success: false, error: "Unable to delete the artist." };
+    return { success: false, error: "Unable to delete this person." };
   }
 }

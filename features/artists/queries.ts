@@ -18,6 +18,7 @@ export async function getArtistsWithProjectCount() {
       id: artists.id,
       name: artists.name,
       slug: artists.slug,
+      kind: artists.kind,
       projectCount: count(projectArtists.projectId),
     })
     .from(artists)
