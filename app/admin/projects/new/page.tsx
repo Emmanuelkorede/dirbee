@@ -18,9 +18,9 @@ export default async function NewProjectPage() {
 
       {artists.length === 0 ? (
         <EmptyState
-          title="Create an artist first"
-          description="Every project needs at least one artist."
-          action={<Link href="/admin/artists/new" className={buttonStyles()}>New artist</Link>}
+          title="Add talent first"
+          description="Every project needs at least one artist or starring person."
+          action={<Link href="/admin/artists/new" className={buttonStyles()}>Add talent</Link>}
         />
       ) : (
         <ProjectForm artists={artists} clients={clients} />

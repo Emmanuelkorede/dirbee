@@ -13,16 +13,16 @@ import { Select } from "@/components/ui/select";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArtistPicker } from "@/features/artists/components/artist-picker";
-import { ClientSelect } from "@/features/clients/components/client-picker";
+import { ClientPicker } from "@/features/clients/components/client-picker";
 import { createProjectAction, updateProjectAction } from "@/features/projects/actions";
-import { PROJECT_TYPE_OPTIONS } from "@/features/projects/options";
+import { personKindFor, PROJECT_TYPE_OPTIONS } from "@/features/projects/options";
 import type { ProjectDetail } from "@/features/projects/types";
 import type { ActionResult } from "@/types/action";
-import type { Artist, Client } from "@/types/database";
+import type { Artist, Client, Project } from "@/types/database";
 import { CreditsEditor } from "./credits-editor";
 
 type ProjectFormProps = {
-  artists: Artist[];
+  artists: Artist[]; // everyone. The form shows the right group for the project type.
   clients: Client[];
   project?: ProjectDetail; // present = editing
 };
@@ -34,47 +34,57 @@ export function ProjectForm({ artists, clients, project }: ProjectFormProps) {
 
   const [title, setTitle] = useState(project?.title ?? "");
   const [description, setDescription] = useState(project?.description ?? "");
-  const [projectType, setProjectType] = useState<string>(project?.projectType ?? PROJECT_TYPE_OPTIONS[0].value);
+  const [projectType, setProjectType] = useState<Project["projectType"]>(
+    project?.projectType ?? PROJECT_TYPE_OPTIONS[0].value,
+  );
   const [projectYear, setProjectYear] = useState(String(project?.projectYear ?? new Date().getFullYear()));
-  const [clientId, setClientId] = useState<string | null>(project?.clientId ?? null);
+  const [clientIds, setClientIds] = useState<string[]>(project?.clients.map((client) => client.id) ?? []);
   const [artistIds, setArtistIds] = useState<string[]>(project?.artists.map((artist) => artist.id) ?? []);
   const [credits, setCredits] = useState(project?.credits ?? []);
   const [wistiaShareUrl, setWistiaShareUrl] = useState(project?.wistiaShareUrl ?? "");
 
-  const [result, formAction] = useActionState<SaveResult | null>(
-    async () => {
-      const input = {
-        title,
-        description,
-        projectType,
-        projectYear,
-        clientId,
-        artistIds,
-        // Empty rows are dropped instead of failing validation.
-        credits: credits.filter((credit) => credit.label.trim() || credit.value.trim()),
-        wistiaShareUrl,
-      };
+  // Editorials / Fashion Film use Starring people. Every other type uses Artists.
+  const kind = personKindFor(projectType);
+  const people = artists.filter((person) => person.kind === kind);
+  const peopleLabel = kind === "starring" ? "Starring" : "Artists";
 
-      const response = project
-        ? await updateProjectAction({ id: project.id, ...input })
-        : await createProjectAction(input);
+  function changeType(next: Project["projectType"]) {
+    // Artists and Starring never overlap, so switching between them clears the picker.
+    if (personKindFor(next) !== kind) setArtistIds([]);
+    setProjectType(next);
+  }
 
-      if (response.success) {
-        const id = response.data?.id;
-        const warning = response.data?.syncWarning;
+  const [result, formAction] = useActionState<SaveResult | null>(async () => {
+    const input = {
+      title,
+      description,
+      projectType,
+      projectYear,
+      clientIds,
+      artistIds,
+      // Empty rows are dropped instead of failing validation.
+      credits: credits.filter((credit) => credit.label.trim() || credit.value.trim()),
+      wistiaShareUrl,
+    };
 
-        if (project) {
-          router.refresh(); // refresh the sync status and badges
-        } else if (id) {
-          const query = warning ? `?syncWarning=${encodeURIComponent(warning)}` : "?created=1";
-          router.push(`/admin/projects/${id}/edit${query}`);
-        }
+    const response = project
+      ? await updateProjectAction({ id: project.id, ...input })
+      : await createProjectAction(input);
+
+    if (response.success) {
+      const id = response.data?.id;
+      const warning = response.data?.syncWarning;
+
+      if (project) {
+        router.refresh(); // refresh the sync status and badges
+      } else if (id) {
+        const query = warning ? `?syncWarning=${encodeURIComponent(warning)}` : "?created=1";
+        router.push(`/admin/projects/${id}/edit${query}`);
       }
+    }
 
-      return response;
-    },
-    null,
-  );
+    return response;
+  }, null);
 
   const errors = result && !result.success ? result.fieldErrors : undefined;
   const syncWarning = result?.success ? result.data?.syncWarning : undefined;
@@ -89,7 +99,7 @@ export function ProjectForm({ artists, clients, project }: ProjectFormProps) {
       <div className="grid gap-6 sm:grid-cols-2">
         <FormField label="Project type" name="projectType" error={errors?.projectType} required>
           <Select id="projectType" name="projectType" value={projectType}
-            onChange={(event) => setProjectType(event.target.value)}>
+            onChange={(event) => changeType(event.target.value as Project["projectType"])}>
             {PROJECT_TYPE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
@@ -102,18 +112,22 @@ export function ProjectForm({ artists, clients, project }: ProjectFormProps) {
         </FormField>
       </div>
 
-      <FormField label="Description" name="description" error={errors?.description} required>
+      <FormField label="Description" name="description" error={errors?.description} hint="Optional.">
         <Textarea id="description" name="description" rows={6} value={description} maxLength={5000}
           onChange={(event) => setDescription(event.target.value)} aria-invalid={Boolean(errors?.description)} />
       </FormField>
 
-      <FormField label="Artists" name="artistIds" error={errors?.artistIds}
-        hint="Order matters: this is the order shown on the project page." required>
-        <ArtistPicker id="artistIds" artists={artists} value={artistIds} onChange={setArtistIds} />
+      <FormField label={peopleLabel} name="artistIds" error={errors?.artistIds} required
+        hint={
+          people.length === 0
+            ? `No one marked as ${kind === "starring" ? "Starring" : "Artist"} yet. Add them under Talent first.`
+            : "Order matters: this is the order shown on the project page."
+        }>
+        <ArtistPicker id="artistIds" people={people} kind={kind} value={artistIds} onChange={setArtistIds} />
       </FormField>
 
-      <FormField label="Client" name="clientId" error={errors?.clientId} hint="Optional.">
-        <ClientSelect id="clientId" clients={clients} value={clientId} onChange={setClientId} />
+      <FormField label="Clients" name="clientIds" error={errors?.clientIds} hint="Optional. A project can have several.">
+        <ClientPicker id="clientIds" clients={clients} value={clientIds} onChange={setClientIds} />
       </FormField>
 
       <FormField label="Credits" name="credits" error={errors?.credits}
