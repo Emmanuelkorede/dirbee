@@ -25,7 +25,7 @@ import cn from "@/lib/utils";
 const links = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Projects", href: "/admin/projects", icon: Clapperboard },
-  { label: "Artists", href: "/admin/artists", icon: Users },
+  { label: "Talent", href: "/admin/artists", icon: Users },
   { label: "Clients", href: "/admin/clients", icon: Briefcase },
   { label: "Photography", href: "/admin/photography", icon: Camera },
   { label: "Reviews", href: "/admin/reviews", icon: MessageSquareQuote },
