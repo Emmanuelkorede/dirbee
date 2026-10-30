@@ -23,7 +23,7 @@ export default async function AdminClientsPage() {
     <div className="space-y-8">
       <PageHeader
         title="Clients"
-        description="Deleting a client does not delete its projects. They are kept and left with no client."
+        description="Deleting a client does not delete its projects. The client is just removed from them."
         actions={newLink}
       />
 
@@ -57,7 +57,7 @@ export default async function AdminClientsPage() {
                       size="sm"
                       confirmMessage={
                         client.projectCount > 0
-                          ? `Delete "${client.name}"? ${client.projectCount} project(s) will be left with no client.`
+                          ? `Delete "${client.name}"? It will be removed from ${client.projectCount} project(s).`
                           : `Delete "${client.name}"?`
                       }
                     >
