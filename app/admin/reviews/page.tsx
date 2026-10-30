@@ -7,6 +7,8 @@ import { setFeaturedReviewsAction } from "@/features/reviews/actions";
 import { ReviewRow } from "@/features/reviews/components/admin/review-row";
 import { getAdminReviews } from "@/features/reviews/queries";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { buttonStyles } from "@/components/ui/button";
+
 import cn from "@/lib/utils";
 
 const FILTERS = [
@@ -41,6 +43,11 @@ export default async function AdminReviewsPage({ searchParams }: Props) {
       <PageHeader
         title="Reviews"
         description="Reviews appear on the site only after you approve them, and only when reviews are switched on in Settings."
+        actions={
+          <Link href="/admin/reviews/new" className={buttonStyles()}>
+            Add review
+          </Link>
+        }
       />
 
       <section className="space-y-6">

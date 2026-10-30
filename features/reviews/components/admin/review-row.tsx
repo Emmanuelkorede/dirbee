@@ -1,20 +1,15 @@
-"use client";
-
-import { useState } from "react";
+import Link from "next/link";
 
 import { ActionButton } from "@/components/ui/action-button";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/modal";
+import { buttonStyles } from "@/components/ui/button";
 import { approveReviewAction, deleteReviewAction, rejectReviewAction } from "@/features/reviews/actions";
 import type { Review } from "@/types/database";
-import { ReviewEditForm } from "./review-edit-form";
 
 const statusTone = { pending: "warning", approved: "success", rejected: "danger" } as const;
 const dateFormat = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium" });
 
 export function ReviewRow({ review }: { review: Review }) {
-  const [editing, setEditing] = useState(false);
   const byline = [review.role, review.company].filter(Boolean).join(", ");
 
   return (
@@ -34,6 +29,7 @@ export function ReviewRow({ review }: { review: Review }) {
             {review.publicationConsent ? "Consent given" : "No consent"}
           </Badge>
           {review.isFeatured && <Badge>Featured</Badge>}
+          {review.submissionSource === "admin" && <Badge>Added by admin</Badge>}
         </div>
       </div>
 
@@ -53,18 +49,14 @@ export function ReviewRow({ review }: { review: Review }) {
             Reject
           </ActionButton>
         )}
-        <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+        <Link href={`/admin/reviews/${review.id}/edit`} className={buttonStyles({ variant: "outline", size: "sm" })}>
           Edit
-        </Button>
+        </Link>
         <ActionButton action={deleteReviewAction} id={review.id} variant="danger" size="sm"
           confirmMessage={`Delete the review from ${review.clientName} permanently?`}>
           Delete
         </ActionButton>
       </div>
-
-      <Modal open={editing} onClose={() => setEditing(false)} title="Edit review" size="md">
-        <ReviewEditForm review={review} onDone={() => setEditing(false)} />
-      </Modal>
     </article>
   );
 }
