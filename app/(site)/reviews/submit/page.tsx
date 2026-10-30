@@ -1,8 +1,23 @@
+import type { Metadata } from "next";
+
+import { Container } from "@/components/ui/container";
+import { PageHeader } from "@/components/ui/page-header";
+import { ReviewSubmissionForm } from "@/features/reviews/components/public/review-submission-form";
+
+export const metadata: Metadata = {
+  title: "Leave a review",
+  description: "Tell us about your experience working with House of Bee.",
+};
+
 export default function SubmitReviewPage() {
   return (
-    <main className="mx-auto max-w-5xl px-6 pt-32 sm:px-10">
-      <h1 className="font-heading text-5xl uppercase tracking-tight sm:text-7xl">Share a review</h1>
-      <p className="mt-6 text-muted-foreground">The review form is coming soon.</p>
-    </main>
+    <Container size="narrow" className="space-y-10 py-12 sm:py-20">
+      <PageHeader
+        eyebrow="Reviews"
+        title="Leave a review"
+        description="Reviews are checked before they appear on the site."
+      />
+      <ReviewSubmissionForm />
+    </Container>
   );
 }

@@ -11,7 +11,7 @@ import {
 } from "framer-motion";
 
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
-import { navLinks } from "@/data/site";
+import { navLinks } from "@/lib/site";
 import cn from "@/lib/utils";
 
 type MenuOverlayProps = {

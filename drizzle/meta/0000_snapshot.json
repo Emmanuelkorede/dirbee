@@ -1,5 +1,5 @@
 {
-  "id": "8b787b50-c186-4b21-882f-b3c777251316",
+  "id": "7452a526-6f92-4078-bece-8bb49422189c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -37,6 +37,114 @@
           "nullsNotDistinct": false,
           "columns": [
             "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.artists": {
+      "name": "artists",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "artists_slug_unique": {
+          "name": "artists_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.clients": {
+      "name": "clients",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "clients_slug_unique": {
+          "name": "clients_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
           ]
         }
       },
@@ -144,7 +252,12 @@
         }
       },
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "photo_shoots_published_at_required": {
+          "name": "photo_shoots_published_at_required",
+          "value": "\"photo_shoots\".\"status\" <> 'published' OR \"photo_shoots\".\"published_at\" IS NOT NULL"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.photos": {
@@ -192,25 +305,25 @@
           "name": "mime_type",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "size_bytes": {
           "name": "size_bytes",
           "type": "bigint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "width_px": {
-          "name": "width_px",
+        "width": {
+          "name": "width",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "height_px": {
-          "name": "height_px",
+        "height": {
+          "name": "height",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "display_order": {
           "name": "display_order",
@@ -235,8 +348,8 @@
         }
       },
       "indexes": {
-        "photos_shoot_id_display_order_idx": {
-          "name": "photos_shoot_id_display_order_idx",
+        "photos_shoot_display_order_idx": {
+          "name": "photos_shoot_display_order_idx",
           "columns": [
             {
               "expression": "shoot_id",
@@ -283,6 +396,108 @@
         }
       },
       "policies": {},
+      "checkConstraints": {
+        "photos_size_positive": {
+          "name": "photos_size_positive",
+          "value": "\"photos\".\"size_bytes\" IS NULL OR \"photos\".\"size_bytes\" > 0"
+        },
+        "photos_width_positive": {
+          "name": "photos_width_positive",
+          "value": "\"photos\".\"width\" IS NULL OR \"photos\".\"width\" > 0"
+        },
+        "photos_height_positive": {
+          "name": "photos_height_positive",
+          "value": "\"photos\".\"height\" IS NULL OR \"photos\".\"height\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.project_artists": {
+      "name": "project_artists",
+      "schema": "",
+      "columns": {
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "artist_id": {
+          "name": "artist_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "project_artists_artist_id_idx": {
+          "name": "project_artists_artist_id_idx",
+          "columns": [
+            {
+              "expression": "artist_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "sort_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "project_artists_project_id_projects_id_fk": {
+          "name": "project_artists_project_id_projects_id_fk",
+          "tableFrom": "project_artists",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "project_artists_artist_id_artists_id_fk": {
+          "name": "project_artists_artist_id_artists_id_fk",
+          "tableFrom": "project_artists",
+          "tableTo": "artists",
+          "columnsFrom": [
+            "artist_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "project_artists_pk": {
+          "name": "project_artists_pk",
+          "columns": [
+            "project_id",
+            "artist_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -313,35 +528,60 @@
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "client_name": {
-          "name": "client_name",
-          "type": "text",
+        "client_id": {
+          "name": "client_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
+        },
+        "project_type": {
+          "name": "project_type",
+          "type": "project_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
         },
         "project_year": {
           "name": "project_year",
           "type": "smallint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "wistia_share_url": {
           "name": "wistia_share_url",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "wistia_media_id": {
           "name": "wistia_media_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "wistia_thumbnail_url": {
           "name": "wistia_thumbnail_url",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "video_width": {
+          "name": "video_width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "video_height": {
+          "name": "video_height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wistia_synced_at": {
+          "name": "wistia_synced_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -351,13 +591,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'[]'::jsonb"
-        },
-        "orientation": {
-          "name": "orientation",
-          "type": "video_orientation",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
         },
         "is_featured": {
           "name": "is_featured",
@@ -409,18 +642,23 @@
         }
       },
       "indexes": {
-        "projects_featured_order_unique": {
-          "name": "projects_featured_order_unique",
+        "projects_status_sort_idx": {
+          "name": "projects_status_sort_idx",
           "columns": [
             {
-              "expression": "featured_order",
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "sort_order",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             }
           ],
-          "isUnique": true,
-          "where": "\"projects\".\"featured_order\" IS NOT NULL",
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -451,9 +689,54 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "projects_client_id_idx": {
+          "name": "projects_client_id_idx",
+          "columns": [
+            {
+              "expression": "client_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "projects_featured_order_unique": {
+          "name": "projects_featured_order_unique",
+          "columns": [
+            {
+              "expression": "featured_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"projects\".\"featured_order\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "projects_client_id_clients_id_fk": {
+          "name": "projects_client_id_clients_id_fk",
+          "tableFrom": "projects",
+          "tableTo": "clients",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "projects_slug_unique": {
@@ -480,6 +763,30 @@
         "projects_featured_consistency": {
           "name": "projects_featured_consistency",
           "value": "\"projects\".\"is_featured\" = (\"projects\".\"featured_order\" IS NOT NULL)"
+        },
+        "projects_published_requires_wistia": {
+          "name": "projects_published_requires_wistia",
+          "value": "\"projects\".\"status\" <> 'published' OR \"projects\".\"wistia_media_id\" IS NOT NULL"
+        },
+        "projects_wistia_media_id_format": {
+          "name": "projects_wistia_media_id_format",
+          "value": "\"projects\".\"wistia_media_id\" IS NULL OR \"projects\".\"wistia_media_id\" ~ '^[a-zA-Z0-9]{10}$'"
+        },
+        "projects_video_width_positive": {
+          "name": "projects_video_width_positive",
+          "value": "\"projects\".\"video_width\" IS NULL OR \"projects\".\"video_width\" > 0"
+        },
+        "projects_video_height_positive": {
+          "name": "projects_video_height_positive",
+          "value": "\"projects\".\"video_height\" IS NULL OR \"projects\".\"video_height\" > 0"
+        },
+        "projects_published_at_required": {
+          "name": "projects_published_at_required",
+          "value": "\"projects\".\"status\" <> 'published' OR \"projects\".\"published_at\" IS NOT NULL"
+        },
+        "projects_year_range": {
+          "name": "projects_year_range",
+          "value": "\"projects\".\"project_year\" BETWEEN 1900 AND 2200"
         }
       },
       "isRLSEnabled": false
@@ -501,20 +808,20 @@
           "primaryKey": false,
           "notNull": true
         },
-        "client_email": {
-          "name": "client_email",
+        "email": {
+          "name": "email",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "client_role": {
-          "name": "client_role",
+        "role": {
+          "name": "role",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "company_name": {
-          "name": "company_name",
+        "company": {
+          "name": "company",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -559,13 +866,15 @@
           "type": "review_source",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "'public_form'"
         },
         "submitted_at": {
           "name": "submitted_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "now()"
         },
         "approved_at": {
           "name": "approved_at",
@@ -624,6 +933,12 @@
               "isExpression": false,
               "asc": true,
               "nulls": "last"
+            },
+            {
+              "expression": "sort_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
             }
           ],
           "isUnique": false,
@@ -637,13 +952,17 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
-        "reviews_featured_must_be_approved": {
-          "name": "reviews_featured_must_be_approved",
-          "value": "\"reviews\".\"is_featured\" = false OR \"reviews\".\"status\" = 'approved'"
+        "reviews_featured_requires_approval": {
+          "name": "reviews_featured_requires_approval",
+          "value": "NOT \"reviews\".\"is_featured\" OR \"reviews\".\"status\" = 'approved'"
         },
-        "reviews_approved_requires_consent": {
-          "name": "reviews_approved_requires_consent",
+        "reviews_approval_requires_consent": {
+          "name": "reviews_approval_requires_consent",
           "value": "\"reviews\".\"status\" <> 'approved' OR \"reviews\".\"publication_consent\" = true"
+        },
+        "reviews_approval_timestamp_required": {
+          "name": "reviews_approval_timestamp_required",
+          "value": "\"reviews\".\"status\" <> 'approved' OR \"reviews\".\"approved_at\" IS NOT NULL"
         }
       },
       "isRLSEnabled": false
@@ -656,21 +975,22 @@
           "name": "id",
           "type": "smallint",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": 1
         },
         "reviews_enabled": {
           "name": "reviews_enabled",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
-          "default": false
+          "default": true
         },
         "show_reviews_on_homepage": {
           "name": "show_reviews_on_homepage",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
-          "default": false
+          "default": true
         },
         "contact_email": {
           "name": "contact_email",
@@ -704,8 +1024,8 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
-        "site_settings_singleton_check": {
-          "name": "site_settings_singleton_check",
+        "site_settings_singleton_id": {
+          "name": "site_settings_singleton_id",
           "value": "\"site_settings\".\"id\" = 1"
         }
       },
@@ -713,6 +1033,16 @@
     }
   },
   "enums": {
+    "public.project_type": {
+      "name": "project_type",
+      "schema": "public",
+      "values": [
+        "visualizer",
+        "artist_unveiling_video",
+        "content",
+        "performance_reel"
+      ]
+    },
     "public.publish_status": {
       "name": "publish_status",
       "schema": "public",
@@ -736,14 +1066,6 @@
         "pending",
         "approved",
         "rejected"
-      ]
-    },
-    "public.video_orientation": {
-      "name": "video_orientation",
-      "schema": "public",
-      "values": [
-        "portrait",
-        "landscape"
       ]
     }
   },

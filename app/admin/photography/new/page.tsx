@@ -1,8 +1,14 @@
-export default function NewPhotographyPage() {
+import { PageHeader } from "@/components/ui/page-header";
+import { ShootForm } from "@/features/photography/components/admin/shoot-form";
+import { requireAdmin } from "@/lib/auth/require-admin";
+
+export default async function NewPhotoShootPage() {
+  await requireAdmin();
+
   return (
-    <main className="mx-auto max-w-5xl px-6 pt-32 sm:px-10">
-      <h1 className="font-heading text-4xl">New photography shoot</h1>
-      <p className="mt-4 text-muted-foreground">Shoot creation is not available yet.</p>
-    </main>
+    <div className="space-y-8">
+      <PageHeader title="New shoot" description="Create the gallery first, then add photos on the next page." />
+      <ShootForm />
+    </div>
   );
 }

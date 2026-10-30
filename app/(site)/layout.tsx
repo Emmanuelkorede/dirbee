@@ -3,26 +3,38 @@ import type { ReactNode } from "react";
 import { SplashScreen } from "@/components/brand/splash-screen";
 import { Footer } from "@/components/navigation/footer";
 import { Navbar } from "@/components/navigation/navbar";
-import { ThemeProvider } from "@/components/theme/theme-provider";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
+import { getSiteSettings } from "@/features/settings/queries";
 
-export default function SiteLayout({ children }: { children: ReactNode }) {
+
+export const revalidate = 86400;
+
+export default async function SiteLayout({ children }: { children: ReactNode }) {
+  const settings = await getSiteSettings();
+
   return (
-    <ThemeProvider>
+    <>
       <SplashScreen />
+
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[110] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-foreground"
+      >
+        Skip to content
+      </a>
+
       <Navbar />
+      <main id="main-content" className="pt-15">{children}</main>
 
-      {/* The navbar is fixed, so each page adds its own top padding
-          (for example pt-28) unless it has a full-bleed hero. */}
-      <main id="main-content">{children}</main>
+      <Footer
+        instagramUrl={settings.instagramUrl}
+        tiktokUrl={settings.tiktokUrl}
+        email={settings.contactEmail}
+      />
 
-      <Footer />
-
-      {/* Floating theme control: desktop only. On mobile the switcher
-          lives inside the menu overlay. */}
       <div className="fixed bottom-6 left-6 z-40 hidden md:block">
         <ThemeSwitcher />
       </div>
-    </ThemeProvider>
+    </>
   );
 }

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import "./globals.css";
 import { DM_Sans, Space_Grotesk } from "next/font/google";
+
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import { siteInfo } from "@/lib/site";
+import "./globals.css";
 
 const headingFont = Space_Grotesk({
   variable: "--font-heading-family",
@@ -13,50 +16,28 @@ const bodyFont = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "House of Bee",
-    template: "%s | House of Bee",
+  metadataBase: new URL(siteInfo.url),
+  title: { default: siteInfo.name, template: `%s | ${siteInfo.name}` },
+  description: siteInfo.description,
+  openGraph: {
+    title: siteInfo.name,
+    description: siteInfo.description,
+    siteName: siteInfo.name,
+    type: "website",
   },
-  description:
-    "House of Bee is a creative production house for music visuals, artist content and cinematic storytelling, led by Director Bee.",
 };
-
-// Runs before the page paints, so there is no flash of the wrong theme
-// and no splash flicker for repeat visitors.
-// Admin, auth and API routes are left alone.
-const themeInitScript = `
-(function () {
-  try {
-    if (/^\\/(admin|auth|api)(\\/|$)/.test(location.pathname)) return;
-    var saved = localStorage.getItem("house-of-bee-theme");
-    var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    var isDark = saved ? saved === "dark" : prefersDark;
-    document.documentElement.classList.toggle("dark", isDark);
-  } catch (e) {}
-  try {
-    if (sessionStorage.getItem("house-of-bee-splash-seen") === "true") {
-      document.documentElement.setAttribute("data-splash-seen", "true");
-    }
-  } catch (e) {}
-})();
-`;
-
-// Paints the correct background even before globals.css has loaded.
-const criticalCss = `html{background-color:#f0eadc}html.dark{background-color:#241b14}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    
     <html
       lang="en"
       suppressHydrationWarning
-      data-scroll-behavior="smooth"
       className={`${headingFont.variable} ${bodyFont.variable}`}
     >
-      <head>
-        <style dangerouslySetInnerHTML={{ __html: criticalCss }} />
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
-      <body>{children}</body>
+      <body className="antialiased">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

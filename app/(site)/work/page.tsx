@@ -1,28 +1,32 @@
 import type { Metadata } from "next";
 
-import { ProjectGrid } from "@/components/projects/project-grid";
-import { projects } from "@/data/projects";
+import { Container } from "@/components/ui/container";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
+import { ProjectGrid } from "@/features/projects/components/public/project-grid";
+import { getPublishedProjects } from "@/features/projects/queries";
 
 export const metadata: Metadata = {
   title: "Work",
-  description:
-    "Music videos, visualizers, artist unveiling videos, performance reels and content by House of Bee.",
+  description: "Music videos, visualizers, artist unveilings and more from House of Bee.",
 };
 
-export default function WorkPage() {
-  return (
-    <div className="mx-auto max-w-7xl px-6 pt-32 sm:px-10">
-      <header className="mb-12">
-        <h1 className="font-heading text-5xl uppercase tracking-tight sm:text-7xl">
-          Work
-        </h1>
-        <p className="mt-4 text-muted-foreground">
-          {projects.length} projects
-        </p>
-      </header>
+export default async function WorkPage() {
+  const projects = await getPublishedProjects();
 
-      <h2 className="sr-only">All projects</h2>
-      <ProjectGrid projects={projects} />
-    </div>
+  return (
+    <Container className="space-y-14 py-12 sm:py-20">
+      <PageHeader
+        size="large"
+        title="Work"
+        description={`${projects.length} project${projects.length === 1 ? "" : "s"}`}
+      />
+
+      {projects.length === 0 ? (
+        <EmptyState title="Work coming soon" description="New projects will appear here." />
+      ) : (
+        <ProjectGrid projects={projects} />
+      )}
+    </Container>
   );
 }

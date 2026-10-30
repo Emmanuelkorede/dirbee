@@ -1,6 +1,10 @@
+import { NextResponse } from "next/server";
+
+import { requireAdmin } from "@/lib/auth/require-admin";
+import { createUploadSignature } from "@/lib/cloudinary/uploads";
+
 export async function POST() {
-  return Response.json(
-    { error: "Upload signing is not implemented yet." },
-    { status: 501 },
-  );
+  await requireAdmin();
+
+  return NextResponse.json(createUploadSignature());
 }

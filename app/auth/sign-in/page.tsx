@@ -1,41 +1,61 @@
 'use client';
 
 import { useActionState } from 'react';
-import {signInWithEmail} from './action';
 
-export default function SignInForm() {
-  const [state, formAction, isPending] = useActionState(signInWithEmail, null);
+import { BrandLockup } from '@/components/brand/brand-lockup';
+import { ThemeSwitcher } from '@/components/theme/theme-switcher';
+import { FormField } from '@/components/ui/form-field';
+import { FormMessage } from '@/components/ui/form-message';
+import { Input } from '@/components/ui/input';
+import { SubmitButton } from '@/components/ui/submit-button';
+import { signInWithEmail } from './action';
+
+export default function SignInPage() {
+  const [state, formAction] = useActionState(signInWithEmail, null);
 
   return (
-    <form action={formAction}
-      className="flex flex-col gap-5 min-h-screen items-center justify-center bg-gray-900">
-
-      <div className="w-sm">
-       <h1 className="mt-10 text-center text-2xl/9 font-bold text-white">Sign in to your account</h1>
+    <main className="grid min-h-dvh place-items-center px-6 py-16">
+      <div className="fixed right-6 top-6">
+        <ThemeSwitcher />
       </div>
 
-      <div className='flex flex-col gap-1.5 w-sm'>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-100">Email address</label>
-        <input id="email" name="email" type="email" required placeholder="john@my-company.com"
-          className="block rounded-md w-full bg-white/5 px-2 py-1.5 placeholder:text-gray-500 text-white outline-1 outline-white/10  focus:outline-indigo-500"/>
-      </div>
-
-      <div className='flex flex-col gap-1.5 w-sm'>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-100">Password</label>
-        <input id="password" name="password" type="password" required placeholder="*****"
-          className="block rounded-md w-full bg-white/5 px-2 py-1.5 placeholder:text-gray-500 text-white outline-1 outline-white/10  focus:outline-indigo-500"/>
-      </div>
-
-      {state?.error && (
-        <div className="rounded-md px-3 py-2 text-sm text-red-500">
-          {state.error}
+      <div className="w-full max-w-sm space-y-8">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <BrandLockup orientation="vertical" />
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            Admin sign in
+          </p>
         </div>
-      )}
 
-      <button type="submit" disabled={isPending}
-        className="flex w-sm justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-indigo-400">
-        Sign in
-      </button>
-    </form>
+        <form action={formAction} className="space-y-5">
+          <FormField label="Email address" name="email">
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              placeholder="you@houseofbee.site"
+            />
+          </FormField>
+
+          <FormField label="Password" name="password">
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+            />
+          </FormField>
+
+          <FormMessage result={state ? { success: false, error: state.error } : null} />
+
+          <SubmitButton pendingText="Signing in..." className="w-full">
+            Sign in
+          </SubmitButton>
+        </form>
+      </div>
+    </main>
   );
 }

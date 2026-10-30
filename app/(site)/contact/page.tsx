@@ -1,27 +1,40 @@
 import type { Metadata } from "next";
 
-import { ContactOptions } from "@/components/contact/contact-options";
+import { Container } from "@/components/ui/container";
+import { PageHeader } from "@/components/ui/page-header";
+import { ContactForm } from "@/features/contact/components/contact-form";
+import { ContactOptions } from "@/features/contact/components/contact-options";
+import { EmailLink } from "@/features/contact/components/email-link";
+import { getSiteSettings } from "@/features/settings/queries";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Get in touch with House of Bee.",
+  description: "Start a project with House of Bee.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const settings = await getSiteSettings();
+
   return (
-    <div className="mx-auto max-w-5xl px-6 pt-32 sm:px-10">
-      <h1 className="font-heading text-5xl uppercase tracking-tight sm:text-7xl">
-        Contact
-      </h1>
+    <Container size="medium" className="space-y-20 py-12 sm:py-20">
+      <header className="space-y-10">
+        <PageHeader
+          size="large"
+          title="Contact"
+          description="Tell us about the artist, the song and what you have in mind."
+        />
 
-      {/* PLACEHOLDER COPY */}
-      <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-        Have a project in mind? Send an email or reach out on social media.
-      </p>
+        {settings.contactEmail && (
+          <div className="space-y-3">
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Prefer email?</p>
+            <EmailLink email={settings.contactEmail} />
+          </div>
+        )}
+      </header>
 
-      <div className="mt-12">
-        <ContactOptions />
-      </div>
-    </div>
+      <ContactForm />
+
+      <ContactOptions instagramUrl={settings.instagramUrl} tiktokUrl={settings.tiktokUrl} />
+    </Container>
   );
 }

@@ -13,8 +13,8 @@ async function main() {
     .insert(siteSettings)
     .values({
       id: 1,
-      reviewsEnabled: false,
-      showReviewsOnHomepage: false,
+      reviewsEnabled: true,
+      showReviewsOnHomepage: true,
     })
     .onConflictDoNothing({
       target: siteSettings.id,

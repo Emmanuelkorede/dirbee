@@ -1,128 +1,92 @@
-import { Suspense } from "react";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { cache } from "react";
 
-import { RelatedProjects } from "@/components/projects/related-projects";
-import { VideoModal } from "@/components/projects/video-modal";
-import { WistiaPlayer } from "@/components/projects/wistia-player";
-import { getProjectBySlug, projects } from "@/data/projects";
-import { getWistiaAspectRatio } from "@/lib/video/wistia-thumbnail";
+import { Container } from "@/components/ui/container";
+import { Reveal } from "@/components/ui/reveal";
+import { ProjectDetails } from "@/features/projects/components/public/project-details";
+import { RelatedProjects } from "@/features/projects/components/public/related-projects";
+import { WistiaPlayer } from "@/features/projects/components/public/wistia-player";
+import { projectTypeLabel } from "@/features/projects/options";
+import { getProjectBySlug, getPublishedProjects, getRelatedProjects } from "@/features/projects/queries";
+import { wistiaThumbnail } from "@/lib/wistia/embed";
 
-type ProjectPageProps = {
-  params: Promise<{ slug: string }>;
-};
+type Props = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
+// Used by both the metadata and the page, but only queries once.
+const loadProject = cache(getProjectBySlug);
+
+// Every published project is built ahead of time. New ones are built on first visit.
+export async function generateStaticParams() {
+  const projects = await getPublishedProjects();
   return projects.map((project) => ({ slug: project.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: ProjectPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const project = getProjectBySlug(slug);
-
+  const project = await loadProject(slug);
   if (!project) return { title: "Project not found" };
 
+  const description = project.description.slice(0, 160);
+  const image = project.wistiaThumbnailUrl
+    ? wistiaThumbnail(project.wistiaThumbnailUrl, 1200, 630)
+    : undefined;
+
   return {
-    title: `${project.title} | ${project.artist}`,
-    description:
-      project.description ??
-      `${project.type} for ${project.artist}. Work by House of Bee.`,
+    title: project.title,
+    description,
+    openGraph: { title: project.title, description, images: image ? [image] : undefined },
   };
 }
 
-type Detail = { label: string; value: string };
-
-function ProjectSkeleton() {
-  return (
-    <div className="mx-auto max-w-6xl px-6 pt-28 sm:px-10" aria-hidden="true">
-      <div className="mb-6 h-5 w-20 rounded bg-card" />
-      <div className="aspect-video w-full animate-pulse rounded-xl border border-border bg-card" />
-      <div className="mt-10 h-12 w-2/3 animate-pulse rounded bg-card" />
-    </div>
-  );
-}
-
-async function ProjectContent({ params }: ProjectPageProps) {
+export default async function ProjectPage({ params }: Props) {
   const { slug } = await params;
-  const project = getProjectBySlug(slug);
+  const project = await loadProject(slug);
+  if (!project || !project.wistiaMediaId) notFound();
 
-  if (!project) notFound();
+  const related = await getRelatedProjects(project.id, 3);
+  const artistNames = project.artists.map((artist) => artist.name).join(", ");
 
-  const aspectRatio =
-    project.aspectRatio ?? (await getWistiaAspectRatio(project.wistiaId));
-
-  // Only rows that contain real data are shown.
-  const details = [
-    { label: "Client", value: project.client },
-    { label: "Artist", value: project.artist },
-    { label: "Type", value: project.type },
-    project.services?.length
-      ? { label: "Services", value: project.services.join(", ") }
-      : null,
-    project.year ? { label: "Year", value: String(project.year) } : null,
-    project.description
-      ? { label: "Overview", value: project.description }
-      : null,
-  ].filter((detail): detail is Detail => detail !== null);
+  // The table: client, artists, type, year, then every credit.
+  const rows: { label: string; value: string }[] = [];
+  if (project.client) rows.push({ label: "Client", value: project.client.name });
+  rows.push({ label: project.artists.length > 1 ? "Artists" : "Artist", value: artistNames });
+  rows.push({ label: "Type", value: projectTypeLabel(project.projectType) });
+  rows.push({ label: "Year", value: String(project.projectYear) });
+  for (const credit of project.credits) rows.push(credit);
 
   return (
-    <article>
-      <div className="mx-auto max-w-6xl px-6 pt-28 sm:px-10">
-        <Link
-          href="/work"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
+    <Container size="medium" className="space-y-16 py-12 sm:py-16">
+      <div className="space-y-6">
+        <Link href="/work" className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
           <ArrowLeft className="size-4" aria-hidden="true" />
           All work
         </Link>
 
-        <VideoModal
-          wistiaId={project.wistiaId}
-          title={project.title}
-          artist={project.artist}
-          aspectRatio={aspectRatio}
-        >
+        <Reveal>
           <WistiaPlayer
-            wistiaId={project.wistiaId}
+            mediaId={project.wistiaMediaId}
             title={project.title}
-            aspectRatio={aspectRatio}
+            artistNames={artistNames}
+            thumbnailUrl={project.wistiaThumbnailUrl}
+            width={project.videoWidth}
+            height={project.videoHeight}
           />
-        </VideoModal>
-
-        <h1 className="mt-10 font-heading text-4xl uppercase tracking-tight sm:text-6xl">
-          {project.title}
-        </h1>
-
-        <dl className="mt-10 border-b border-border">
-          {details.map((detail) => (
-            <div
-              key={detail.label}
-              className="grid gap-1 border-t border-border py-4 sm:grid-cols-[10rem_1fr] sm:gap-6"
-            >
-              <dt className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                {detail.label}
-              </dt>
-              <dd className="text-base">{detail.value}</dd>
-            </div>
-          ))}
-        </dl>
+        </Reveal>
       </div>
 
-      <div className="mx-auto max-w-6xl px-6 pt-20 sm:px-10">
-        <RelatedProjects project={project} />
-      </div>
-    </article>
-  );
-}
+      <div className="space-y-10">
+        <h1 className="font-heading text-5xl uppercase leading-none tracking-tight sm:text-7xl">{project.title}</h1>
 
-export default function ProjectPage({ params }: ProjectPageProps) {
-  return (
-    <Suspense fallback={<ProjectSkeleton />}>
-      <ProjectContent params={params} />
-    </Suspense>
+        {/* Delete this line if you do not want the description shown publicly. */}
+        <p className="max-w-2xl whitespace-pre-line leading-relaxed text-foreground/80">{project.description}</p>
+
+        <ProjectDetails rows={rows} />
+      </div>
+
+      <RelatedProjects projects={related} />
+    </Container>
   );
 }
