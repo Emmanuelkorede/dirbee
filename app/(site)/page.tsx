@@ -17,9 +17,9 @@ export default async function HomePage() {
       <DirectorPreview />
 
       {reviews.length > 0 && (
-        <section className="pb-24 pt-8">
-          <Container className="space-y-10">
-            <SectionHeading title="Kind words" href="/reviews" linkLabel="Read more" />
+        <section className="py-8 sm:py-12">
+          <Container className="space-y-8 py-8 sm:py-12">
+            <SectionHeading title="Reviews" href="/reviews" linkLabel="Read more" />
             <ReviewSection reviews={reviews} />
           </Container>
         </section>

@@ -8,7 +8,7 @@ import { Reveal } from "@/components/ui/reveal";
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-[80svh] items-center overflow-hidden">
+    <section className="relative flex items-center overflow-hidden">
       {/* The faint logo mark. Nearly the full width on phones, about 600px on desktop,
           and cropped by the right edge of the screen like the original. */}
       <div
@@ -18,8 +18,8 @@ export function Hero() {
         <BeeLogo size="100%" />
       </div>
 
-      <Container className="relative py-20">
-        <Reveal className="space-y-8">
+      <Container className="relative py-10 sm:py-16">
+        <Reveal className="space-y-6">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">A creative production house</p>
 
           <h1 className="font-heading text-[12vw] uppercase leading-none tracking-tight sm:text-7xl md:text-8xl lg:text-9xl">
@@ -30,7 +30,7 @@ export function Hero() {
             Campaign Rollouts. Visual Direction. Creative Development.
           </p>
 
-          <div className="flex flex-wrap gap-3 pt-2">
+          <div className="flex flex-wrap gap-3 pt-1">
             <Link href="/work" className={buttonStyles()}>
               View work
               <ArrowRight className="size-4" aria-hidden="true" />

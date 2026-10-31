@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import { Reveal } from "@/components/ui/reveal";
 import { projectGroup, WORK_FILTERS, type WorkFilter } from "@/features/projects/options";
 import type { ProjectWithArtists } from "@/features/projects/types";
 import cn from "@/lib/utils";
@@ -28,7 +27,7 @@ export function ProjectGrid({ projects }: { projects: ProjectWithArtists[] }) {
     );
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
       {showFilters && (
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filter projects">
           {WORK_FILTERS.map((item) => (
@@ -45,11 +44,9 @@ export function ProjectGrid({ projects }: { projects: ProjectWithArtists[] }) {
         </div>
       )}
 
-      <div className="grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((project) => (
-          <Reveal key={project.id}>
-            <ProjectCard project={project} />
-          </Reveal>
+          <ProjectCard key={project.id} project={project} />
         ))}
       </div>
     </div>

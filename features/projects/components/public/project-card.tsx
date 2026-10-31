@@ -34,11 +34,9 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps) {
         </span>
       </div>
 
-      <div className="mt-4 space-y-1.5">
+      <div className="mt-3 space-y-1">
         <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{artists}</p>
-        <h3 className={cn("font-heading tracking-tight", featured ? "text-3xl sm:text-4xl" : "text-xl")}>
-          {project.title}
-        </h3>
+        <h3 className="font-heading text-xl tracking-tight sm:text-2xl">{project.title}</h3>
         <p className="text-sm text-muted-foreground">{projectTypeLabel(project.projectType)}</p>
       </div>
     </Link>
