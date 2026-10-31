@@ -21,7 +21,7 @@ export default async function ContactPage() {
         <PageHeader
           size="large"
           title="Contact"
-          description="Tell us about the artist, the song and what you have in mind."
+          description="Tell us about your project, your vision, and what you’d like to bring to life."
         />
 
         {settings.contactEmail && (

@@ -19,10 +19,10 @@ export function EmailLink({ email }: { email: string }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-4">
+    <div className="flex flex-wrap items-center gap-3">
       <a
         href={`mailto:${email}`}
-        className="break-all font-heading text-2xl tracking-tight underline decoration-border underline-offset-8 transition-colors hover:decoration-foreground sm:text-4xl"
+        className="break-all font-heading text-lg tracking-tight underline decoration-border underline-offset-4 transition-colors hover:decoration-foreground sm:text-2xl"
       >
         {email}
       </a>
