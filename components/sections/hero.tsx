@@ -9,8 +9,6 @@ import { Reveal } from "@/components/ui/reveal";
 export function Hero() {
   return (
     <section className="relative flex items-center overflow-hidden">
-      {/* The faint logo mark. Nearly the full width on phones, about 600px on desktop,
-          and cropped by the right edge of the screen like the original. */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -right-[19vw] top-1/2 aspect-square w-[96vw] -translate-y-[52%] text-foreground opacity-[0.06] md:-right-[6vw] md:w-[min(48vw,640px)]"

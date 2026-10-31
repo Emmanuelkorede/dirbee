@@ -6,14 +6,16 @@ import { Navbar } from "@/components/navigation/navbar";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { getSiteSettings } from "@/features/settings/queries";
 
-
+// Safety net: every public page regenerates at most once a day,
+// even if nobody saves anything in the admin.
 export const revalidate = 86400;
 
 export default async function SiteLayout({ children }: { children: ReactNode }) {
   const settings = await getSiteSettings();
 
   return (
-    <>
+    
+    <div className="overflow-x-clip">
       <SplashScreen />
 
       <a
@@ -24,7 +26,7 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       </a>
 
       <Navbar />
-      <main id="main-content" className="pt-15">{children}</main>
+      <main id="main-content" className="pt-18">{children}</main>
 
       <Footer
         instagramUrl={settings.instagramUrl}
@@ -35,6 +37,6 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       <div className="fixed bottom-6 left-6 z-40 hidden md:block">
         <ThemeSwitcher />
       </div>
-    </>
+    </div>
   );
 }
